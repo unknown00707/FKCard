@@ -18,8 +18,10 @@ public class JobManager : MonoBehaviour
         healler, // 힐러 
         joker, // 전략가
         unemployed, // 백수, 빈털털이  : 카드가 6장
-        convict // 죄수 : 트롤  - 성능 카드 2장 
+        convict // 죄수 : 트롤 1장  - 성능 카드 2장 
     }
+    
+    public string userJobState;
 
     Dictionary<string , string> jobPassive = new Dictionary<string, string>()
     {
@@ -32,23 +34,22 @@ public class JobManager : MonoBehaviour
         { "unemployed", "카드획득 배율이 1.5배 (4개=6개)로 적용 / 전투중에 아군에게 카드양도 가능인데 카드 0개되면 바로 사망"},
         { "convict", "카드획득 배율이 0.5배 (4개=2개)로 적용 / 자기가 뽑은 카드의 수치가 1.5배 / 공격력 높음"},
     };
+    
+    
+    // 탱커 : 자기카드 쓰면 최대체력의 3%씩 일시적 추가체력
+    //근딜 : 자기카드 쓰면 치명타 확률 10% 추가적용
+    //광딜 : 자기카드 쓰면 공격력 +10%
+    //버퍼 : 자기카드 쓸 때마다 그 스테이지에서 아군 스탯 +1
+    //힐러 : 자기카드 쓰면 카드 스탯 2배로 증가
+    //전략가 : 자기카드 쓰면 25%확률로 카드 반환
+    //빈털털이 : 없음
+    //죄수 : 자기카드 쓰면 100%확률로 아군의 카드중 1개를 복사해서 50%위력으로 발동
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void ChangeName(String index)
     {
         jobName.text = index;
         jobExplain.text = jobPassive[index];
+        userJobState = index;
     }
 }

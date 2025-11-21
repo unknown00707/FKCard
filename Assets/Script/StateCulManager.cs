@@ -8,21 +8,20 @@ public class StateCulManager : MonoBehaviour
     public int MAXCARDNUM = 200;
     public Transform userT;
     public GameObject minJCardsPerfab;
-    [Header("sdfa")]
-    public int userHP = 100;
-    public int userDamge = 10;
-    public int userCRIP = 1; // 치명타 퍼센트 100%
+    [Header("stat")]
+    public float userHP = 100;
+    public float userDamge = 10;
+    public float userCRIP = 1; // 치명타 퍼센트 100%
+    [Header("Card")]
+    public float cardHp;
+    public float cardDamage;
+    public float cardCRIP;
+    public float cardHeal;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         StartInit();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     void StartInit()
