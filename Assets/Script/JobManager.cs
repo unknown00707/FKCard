@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,7 +9,11 @@ public class JobManager : MonoBehaviour
     [Header("Explain")]
     public Text jobName;
     public Text jobExplain;
-    
+    [Header("ReadyAbout")]
+    public GameObject seletedObj;
+    public GameObject jobsObj;
+    public GameObject readyRoomObj;
+
     public enum Jobs
     {
         defender, // 탱커
@@ -58,8 +63,8 @@ public class JobManager : MonoBehaviour
     //     { "unemployed", "카드획득 배율이 1.5배 (4개=6개)로 적용 / 전투중에 아군에게 카드양도 가능인데 카드 0개되면 바로 사망"},
     //     { "convict", "카드획득 배율이 0.5배 (4개=2개)로 적용 / 자기가 뽑은 카드의 수치가 1.5배 / 공격력 높음"},
     // };
-    
-    
+
+
     //탱커 : 자기카드 쓰면 최대체력의 3%씩 일시적 추가체력
     //근딜 : 자기카드 쓰면 치명타 확률 10% 추가적용
     //광딜 : 자기카드 쓰면 공격력 +10%
@@ -68,7 +73,11 @@ public class JobManager : MonoBehaviour
     //전략가 : 자기카드 쓰면 25%확률로 카드 반환
     //빈털털이 : 없음
     //죄수 : 자기카드 쓰면 100%확률로 아군의 카드중 1개를 복사해서 50%위력으로 발동
-
+    void Start()
+    {
+        jobName.text = arryValueList[0];
+        jobExplain.text = jobPassive[arryValueList[0]];
+    }
 
     public void ChangeName(int index)
     {
@@ -138,5 +147,15 @@ public class JobManager : MonoBehaviour
                 userJobState = Jobs.convict;
                 break;
         }
+
+        //var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+        //plyaer.ReciveJobs(userJobState);
     }
+
+    public void GoToReadyRoom(bool isGotoRoom)
+    {
+        jobsObj.SetActive(!isGotoRoom);
+        readyRoomObj.SetActive(isGotoRoom);
+    }
+
 }
