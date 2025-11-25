@@ -1,64 +1,105 @@
+using System;
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class GameManager : NetworkBehaviour
 {
     // 기본적으로 NetworkVariable은 서버만 쓸 수 있고(Write), 모두가 읽을 수 있어(Read).
-    public NetworkVariable<int> TurnNumber = new(1);
-    public NetworkVariable<JobManager.Jobs> playerJobs = new();
-    public NetworkVariable<ulong> playerID = new();
+    public NetworkList<FixedString64Bytes> playerJobs;
+    public NetworkVariable<int> playerTotalNum = new();
+    public NetworkList<bool> playerReady = new();
+
+    void Awake()
+    {
+        playerJobs = new NetworkList<FixedString64Bytes>(
+            new List<FixedString64Bytes>{new("0"), new("1"), new("2")},
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+
+        playerReady = new NetworkList<bool>(
+            new List<bool>{false, false, false},
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+    }
 
     // Start 대신 OnNetworkSpawn을 쓰는 게 네트워크 스크립트의 국룰이야!
     public override void OnNetworkSpawn()
     {
-        // 값이 바뀔 때마다 로그를 찍어보자 (서버, 클라 모두 실행됨)
-        TurnNumber.OnValueChanged += (oldValue, newValue) =>
+        if(IsServer)
         {
-            Debug.Log($"[턴 변경] {oldValue} -> {newValue}");
-        };
-    }
-
-    void Update()
-    {
-        // 1. (중요) 내가 '내 캐릭터'를 가진 주인일 때만 입력을 받거나,
-        // GameManager처럼 공용 객체라면 'IsOwner' 체크가 필요 없을 수도 있지만,
-        // 보통 입력을 서버로 보내는 건 'ServerRpc'를 통해야 해.
-
-        if (Input.GetKeyDown(KeyCode.Space)) // 스페이스바를 누르면
-        {
-            // 내가 서버(Host)라면? -> 바로 변경
-            if (IsServer)
-            {
-                ChangeValue();
-            }
-            // 내가 클라이언트라면? -> 서버한테 바꿔달라고 요청 (RPC)
-            else
-            {
-                RequestChangeTurnServerRpc();
-            }
+            playerTotalNum.Value = NetworkManager.Singleton.ConnectedClientsList.Count;
         }
+
+        // 리스너 등록
+        playerTotalNum.OnValueChanged += OnPlayerTotalNumChanged;
+        playerJobs.OnListChanged += OnPlayerJobsChanged;
+        playerReady.OnListChanged += OnPlayerReadyChanged;
+
+        print("리스너 등록");
     }
 
-    // [ServerRpc] : 클라이언트가 호출하지만, 실제 실행은 서버에서 되는 함수
-    [ServerRpc] // 누구나 요청할 수 있게 허용
-    void RequestChangeTurnServerRpc()
+
+    public override void OnNetworkDespawn()
     {
-        ChangeValue();
+        // 리스너 해제
+        playerTotalNum.OnValueChanged -= OnPlayerTotalNumChanged;
+        playerJobs.OnListChanged -= OnPlayerJobsChanged;
+        playerReady.OnListChanged -= OnPlayerReadyChanged;
     }
 
-    void ChangeValue()
+    
+    void OnPlayerTotalNumChanged(int oldValue, int newValue)
     {
-        // 값 변경은 오직 서버에서만 일어나야 에러가 안 남!
-        TurnNumber.Value += 1;
+        Debug.Log("플레이어 수 조정  {oldValue} -> {newValue} . . . 난이도 조정 중. . .");
+    }
+    void OnPlayerJobsChanged(NetworkListEvent<FixedString64Bytes> changeEvent)
+    {
+        print("리스너 작동");
+        JobManager jobManager = FindAnyObjectByType<JobManager>();
+        jobManager.ReciveJobsDataPublic(playerJobs, playerTotalNum.Value);
     }
 
+    void OnPlayerReadyChanged(NetworkListEvent<bool> changeEvent)
+    {
+        JobManager jobManager = FindAnyObjectByType<JobManager>();
+        jobManager.ReciveReadySignPublic(playerReady);
+    }
+
+    // 직업 선택 
     public void InDicUserJobValue(ulong index, JobManager.Jobs job)
     {
-        
-        playerID.Value = index;
-        playerJobs.Value = job;
-        print(playerID.Value + " , " + playerJobs.Value);
-        
+        playerJobs[(int)index] = job.ToString(); 
     }
+
+    // 준비 신호 받기
+    public void InPlayerReadySign(ulong index, bool isReady)
+    {
+        playerReady[(int)index] = isReady; 
+    }
+
+    // 게임 시작 신호 받기
+    public void InGameStartSign()
+    {
+        for(int i = 0; i < playerTotalNum.Value; i++)
+        {
+            if(!playerReady[i])
+                return;
+        }
+
+        JobManager jobManager = FindAnyObjectByType<JobManager>();
+        jobManager.RequestGameStartSignClientRpc();
+    }
+
+    public override void OnDestroy()
+    {
+        playerJobs?.Dispose();
+        playerTotalNum?.Dispose(); // NetworkVariable도 Dispose가 필요합니다.
+        playerReady?.Dispose();
+    }
+
+    
 }

@@ -210,7 +210,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190335
+    rgba: 4278255360
   m_fontColor: {r: 0, g: 1, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -408,10 +408,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   cname: "\uD544\uC0B4 \uC12C\uBA78"
-  hp: 50
+  hp: 15
   damage: 0
   cRIP: 0
   heal: 0
   type: 0
   index: 0
-  image: {fileID: 5088316998373936774, guid: df4dee67bf149d340ad7546753433cef, type: 3}
+  image: {fileID: 5088316998373936774, guid: cc2645ffcf734a84d9429418742dcbef, type: 3}
+  cardExplain: "1\uD134\uB3D9\uC548 \uCD5C\uB300\uCCB4\uB825\uC758 15% \uCD94\uAC00\uCCB4\uB825"

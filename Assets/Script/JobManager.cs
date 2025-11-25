@@ -1,11 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class JobManager : MonoBehaviour
 {
+    public StateCulManager stateCulManager;
+
+    [Header("JobStat")]
+    public float jobHp;
+    public float jobDG;
+    public float jobCIRP;
+
     [Header("Explain")]
     public Text jobName;
     public Text jobExplain;
@@ -13,6 +23,9 @@ public class JobManager : MonoBehaviour
     public GameObject seletedObj;
     public GameObject jobsObj;
     public GameObject readyRoomObj;
+    public GameObject[] playerReadyObjs;
+    public GameObject gameStartBTN;
+    public bool isReady = false;
 
     public enum Jobs
     {
@@ -51,7 +64,7 @@ public class JobManager : MonoBehaviour
         {6, "빈털털이"},
         {7, "죄수"},
     };
-
+    public Sprite[] jobIcons;
     // Dictionary<string , string> jobPassive = new Dictionary<string, string>()
     // {
     //     { "defender", "단일공격을 모두 자신이 받음 / 모든 피해를 일부분 차감시켜 받음 / 체력 높음"},
@@ -77,6 +90,29 @@ public class JobManager : MonoBehaviour
     {
         jobName.text = arryValueList[0];
         jobExplain.text = jobPassive[arryValueList[0]];
+
+        HideStartButton();
+        GoToReadyRoom(false);
+    }
+
+    void HideStartButton()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+            // 현재 인스턴스가 Host(서버 + 클라이언트) 또는 Server 전용인지 확인
+            if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
+            {
+                gameStartBTN.SetActive(true);
+            }
+            else
+            {
+                gameStartBTN.SetActive(false);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("NetworkManager not found. Assuming single player context.");
+        }
     }
 
     public void ChangeName(int index)
@@ -124,32 +160,56 @@ public class JobManager : MonoBehaviour
         {
             case "탱커":
                 userJobState = Jobs.defender;
+                jobHp = 500;
+                jobDG = 100;
+                jobCIRP = 1;
                 break; 
             case "근접 딜러":
                 userJobState = Jobs.knight;
+                jobHp = 250;
+                jobDG = 450;
+                jobCIRP = 30;
                 break; 
             case "광역 딜러":
                 userJobState = Jobs.wizard;
+                jobHp = 250;
+                jobDG = 500;
+                jobCIRP = 1;
                 break; 
             case "힐러":
                 userJobState = Jobs.healler;
+                jobHp = 350;
+                jobDG = 100;
+                jobCIRP = 1;
                 break; 
             case "버퍼":
                 userJobState = Jobs.buffer;
+                jobHp = 250;
+                jobDG = 100;
+                jobCIRP = 1;
                 break; 
             case "전략가":
                 userJobState = Jobs.joker;
+                jobHp = 200;
+                jobDG = 100;
+                jobCIRP = 1;
                 break; 
             case "빈털털이":
                 userJobState = Jobs.unemployed;
+                jobHp = 100;
+                jobDG = 100;
+                jobCIRP = 1;
                 break; 
             case "죄수":
                 userJobState = Jobs.convict;
+                jobHp = 50;
+                jobDG = 50;
+                jobCIRP = 1;
                 break;
         }
 
-        //var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
-        //plyaer.ReciveJobs(userJobState);
+        var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+        plyaer.ReciveJobs(userJobState);
     }
 
     public void GoToReadyRoom(bool isGotoRoom)
@@ -157,5 +217,102 @@ public class JobManager : MonoBehaviour
         jobsObj.SetActive(!isGotoRoom);
         readyRoomObj.SetActive(isGotoRoom);
     }
+    public float[] SendTheJobStat()
+    {
+        float[] a = new float[3];
+        a[0] = jobHp;
+        a[1] = jobDG;
+        a[2] = jobCIRP;
 
+        return a;
+    }
+
+    public void ReciveJobsDataPublic(NetworkList<FixedString64Bytes> playerJobs, int index)
+    {
+        for(int i = 0; i < index; i++)
+        {
+            Image icon = playerReadyObjs[i].GetComponentInChildren<Image>();
+            TextMeshProUGUI txt = playerReadyObjs[i].GetComponentInChildren<TextMeshProUGUI>();
+
+            if(i == (int)NetworkManager.Singleton.LocalClientId)
+                txt.text = playerJobs[i].ToString()+ "\n" + "'나'";
+            else
+                txt.text = playerJobs[i].ToString()+ "\n" + "";
+
+            switch(playerJobs[i].ToString())
+            {
+                case "defender":
+                    icon.sprite = jobIcons[0];
+                    break; 
+                case "knight":
+                    icon.sprite = jobIcons[1];
+                    break; 
+                case "wizard":
+                    icon.sprite = jobIcons[2];
+                    break; 
+                case "healler":
+                    icon.sprite = jobIcons[3];
+                    break; 
+                case "buffer":
+                    icon.sprite = jobIcons[4];
+                    break; 
+                case "joker":
+                    icon.sprite = jobIcons[5];
+                    break; 
+                case "unemployed":
+                    icon.sprite = jobIcons[6];
+                    break; 
+                case "convict":
+                    icon.sprite = jobIcons[7];
+                    break;
+            }
+        }
+        
+        if(playerJobs.Count > index)
+        {
+            for(int i = playerJobs.Count; i < index; i--)
+            {
+                print(i);
+                Image icon = playerReadyObjs[i-1].GetComponentInChildren<Image>();
+                TextMeshProUGUI txt = playerReadyObjs[i-1].GetComponentInChildren<TextMeshProUGUI>();
+
+                icon.gameObject.SetActive(false);
+                txt.text = "";
+            }
+        }
+    }
+
+    public void ReadyBTNFouction()
+    {
+        isReady = !isReady;
+        var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+        plyaer.ReciveReadySign(isReady);
+    }
+
+    public void ReciveReadySignPublic(NetworkList<bool> playerReady)
+    {
+        for(int i = 0; i < playerReadyObjs.Count(); i++)
+        {
+            TextMeshProUGUI txt = playerReadyObjs[i].GetComponentInChildren<TextMeshProUGUI>();
+            if(playerReady[i])
+                txt.color = Color.green;
+            else
+                txt.color = Color.black;
+        }
+    }
+
+    // 게임 시작 관련 기능
+    public void GameStartFouction()
+    {
+        var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+        plyaer.ReciveGameStartSign();
+    }
+
+    [ClientRpc]
+    public void RequestGameStartSignClientRpc()
+    {
+        GoToReadyRoom(false);
+        seletedObj.SetActive(false);
+        stateCulManager.InitCardPlayer();
+    }
 }

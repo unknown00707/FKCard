@@ -115,17 +115,21 @@ public class LobbyManager : MonoBehaviour
         }
         playerListText.text = playerList;
 
-        // 3. 게임 시작 버튼 처리 (방장만 보여야 함!)
-        if (NetworkManager.Singleton.IsHost && startGameButton != null)
+        if(startGameButton != null)
         {
-            startGameButton.gameObject.SetActive(true);
-            // 3명이 다 모여야 버튼이 활성화되게 하려면:
-            // startGameButton.interactable = (playerCount == MAX_PLAYERS); 
+            // 3. 게임 시작 버튼 처리 (방장만 보여야 함!)
+            if (NetworkManager.Singleton.IsHost)
+            {
+                startGameButton.gameObject.SetActive(true);
+                // 3명이 다 모여야 버튼이 활성화되게 하려면:
+                // startGameButton.interactable = (playerCount == MAX_PLAYERS); 
+            }
+            else
+            {
+                startGameButton.gameObject.SetActive(false);
+            }    
         }
-        else
-        {
-            startGameButton.gameObject.SetActive(false);
-        }
+        
     }
 
     // ====================================================

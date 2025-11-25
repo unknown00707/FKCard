@@ -408,10 +408,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   cname: "\uBBFC\uC900\uC774 \uBC30\uCE58\uAE30"
-  hp: 70
-  damage: 0
+  hp: 0
+  damage: 10
   cRIP: 0
   heal: 0
   type: 0
   index: 1
-  image: {fileID: 5088316998373936774, guid: df4dee67bf149d340ad7546753433cef, type: 3}
+  image: {fileID: 5088316998373936774, guid: cc2645ffcf734a84d9429418742dcbef, type: 3}
+  cardExplain: "\uCD5C\uB300\uCCB4\uB825\uC758 10%\uB9CC\uD07C \uACF5\uACA9"

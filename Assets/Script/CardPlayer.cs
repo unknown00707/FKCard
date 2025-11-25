@@ -23,6 +23,7 @@ public class CardPlayer : NetworkBehaviour
         }
     }
 
+    // 직업 선택 , 변경 관련
     public void ReciveJobs(JobManager.Jobs job)
     {
        if (!IsOwner) return;
@@ -31,11 +32,47 @@ public class CardPlayer : NetworkBehaviour
     }
 
     [ServerRpc]
-    public void RequestUserJobServerRpc(ulong index ,JobManager.Jobs job)
+    private void RequestUserJobServerRpc(ulong index ,JobManager.Jobs job)
     {
         GameManager gameManager = FindAnyObjectByType<GameManager>();
         if(gameManager != null)
             gameManager.InDicUserJobValue(index, job);
+    }
+
+    // 대기 , 준비 관련
+    public void ReciveReadySign(bool isReady)
+    {
+        if (!IsOwner) return;
+
+        RequestUserReadySignServerRpc(isReady);
+    }
+
+    [ServerRpc]
+    private void RequestUserReadySignServerRpc(bool isReady)
+    {
+        GameManager gameManager = FindAnyObjectByType<GameManager>();
+        if(gameManager != null)
+            gameManager.InPlayerReadySign(OwnerClientId, isReady);
+    }
+
+    // 게임 시작 관련
+    public void ReciveGameStartSign()
+    {
+        if (!IsServer) return;
+
+        RequestGameStartSignServerRpc();
+    } 
+
+    [ServerRpc]
+    private void RequestGameStartSignServerRpc()
+    {
+        GameManager gameManager = FindAnyObjectByType<GameManager>();
+        if(gameManager != null)
+            gameManager.InGameStartSign();
+    }
+    public void Damage(float damage)
+    {
+       
     }
 
 }

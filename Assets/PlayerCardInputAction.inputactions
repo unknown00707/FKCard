@@ -1,0 +1,72 @@
+{
+    "version": 1,
+    "name": "PlayerCardInputAction",
+    "maps": [
+        {
+            "name": "Card",
+            "id": "f3011f3f-4488-421d-ac50-552523657d76",
+            "actions": [
+                {
+                    "name": "Dragin",
+                    "type": "Button",
+                    "id": "7a2abf48-bba8-4912-80a0-803e7c2f4649",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Dragout",
+                    "type": "Button",
+                    "id": "a3afb6f4-af24-4ad7-bb32-7f7abdafadd6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "8da485cf-eb0c-4d8d-adbe-c4a2521971c8",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "Hold",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "Dragin",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "18a1af69-54fa-425d-8488-6060da8f8a17",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "Press(behavior=1)",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "Dragout",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "PC",
+            "bindingGroup": "PC",
+            "devices": [
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
