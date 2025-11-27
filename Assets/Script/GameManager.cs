@@ -6,13 +6,29 @@ using UnityEngine;
 
 public class GameManager : NetworkBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
     // 기본적으로 NetworkVariable은 서버만 쓸 수 있고(Write), 모두가 읽을 수 있어(Read).
     public NetworkList<FixedString64Bytes> playerJobs;
     public NetworkVariable<int> playerTotalNum = new();
     public NetworkList<bool> playerReady = new();
 
+    JobManager jobManager;
+    CardSpaceCheck cardSpaceCheck;
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
+
+        jobManager = FindAnyObjectByType<JobManager>();
+        //cardSpaceCheck = FindAnyObjectByType<CardSpaceCheck>();
+
         playerJobs = new NetworkList<FixedString64Bytes>(
             new List<FixedString64Bytes>{new("0"), new("1"), new("2")},
             NetworkVariableReadPermission.Everyone,
@@ -39,7 +55,6 @@ public class GameManager : NetworkBehaviour
         playerJobs.OnListChanged += OnPlayerJobsChanged;
         playerReady.OnListChanged += OnPlayerReadyChanged;
 
-        print("리스너 등록");
     }
 
 
@@ -58,14 +73,11 @@ public class GameManager : NetworkBehaviour
     }
     void OnPlayerJobsChanged(NetworkListEvent<FixedString64Bytes> changeEvent)
     {
-        print("리스너 작동");
-        JobManager jobManager = FindAnyObjectByType<JobManager>();
         jobManager.ReciveJobsDataPublic(playerJobs, playerTotalNum.Value);
     }
 
     void OnPlayerReadyChanged(NetworkListEvent<bool> changeEvent)
     {
-        JobManager jobManager = FindAnyObjectByType<JobManager>();
         jobManager.ReciveReadySignPublic(playerReady);
     }
 
@@ -90,10 +102,15 @@ public class GameManager : NetworkBehaviour
                 return;
         }
 
-        JobManager jobManager = FindAnyObjectByType<JobManager>();
         jobManager.RequestGameStartSignClientRpc();
     }
 
+    // 카드 배치 신호 받기 및 카드 생성 함수 호출
+    public void RequsetMakeSameCardPublic(Transform tr ,ulong id)
+    {
+        cardSpaceCheck.MakeCardPublicSame(tr, id);
+    }
+    
     public override void OnDestroy()
     {
         playerJobs?.Dispose();

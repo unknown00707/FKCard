@@ -13,6 +13,7 @@ using Unity.Services.Lobbies.Models;
 public class StateCulManager : MonoBehaviour
 {
     public JobManager jobManager;
+    CardPlayer player;
     public GameObject canvers;
     public int initalCardN = 4;
     public static int MAXCARDNUM = 200;
@@ -54,6 +55,12 @@ public class StateCulManager : MonoBehaviour
     public Button[] convictObjPrefabs;
     public Button[] unemployedObjPrefabs;
 
+    void Awake()
+    {
+        if(NetworkManager.Singleton != null)
+            player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -71,8 +78,6 @@ public class StateCulManager : MonoBehaviour
 
             initEmptyObjs[i] = obj.GetComponent<Button>();
         }
-        
-        InitCardPlayer(); // test
     }
     public void InitCardPlayer()
     {
@@ -287,7 +292,6 @@ public class StateCulManager : MonoBehaviour
     void OnDragout()
     {
         DragFocution(false); // Dray out
-        //var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
 
         CardSearchMatch();
         //plyaer.Damage(cardDamage);
@@ -297,8 +301,10 @@ public class StateCulManager : MonoBehaviour
     {
         GraphicRaycaster graphicRaycaster = canvers.GetComponent<GraphicRaycaster>();
 
-        PointerEventData pointerEventData = new(EventSystem.current);
-        pointerEventData.position = Input.mousePosition;
+        PointerEventData pointerEventData = new(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
 
         List<RaycastResult> raycastResults = new();
 

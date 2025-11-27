@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class JobManager : MonoBehaviour
 {
     public StateCulManager stateCulManager;
+    CardPlayer player;
 
     [Header("JobStat")]
     public float jobHp;
@@ -86,6 +87,11 @@ public class JobManager : MonoBehaviour
     //전략가 : 자기카드 쓰면 25%확률로 카드 반환
     //빈털털이 : 없음
     //죄수 : 자기카드 쓰면 100%확률로 아군의 카드중 1개를 복사해서 50%위력으로 발동
+    void Awake()
+    {
+        if(NetworkManager.Singleton != null)
+            player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+    }
     void Start()
     {
         jobName.text = arryValueList[0];
@@ -208,8 +214,7 @@ public class JobManager : MonoBehaviour
                 break;
         }
 
-        var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
-        plyaer.ReciveJobs(userJobState);
+        player.ReciveJobs(userJobState);
     }
 
     public void GoToReadyRoom(bool isGotoRoom)
@@ -239,6 +244,7 @@ public class JobManager : MonoBehaviour
             else
                 txt.text = playerJobs[i].ToString()+ "\n" + "";
 
+            icon.color = Color.white;
             switch(playerJobs[i].ToString())
             {
                 case "defender":
@@ -270,14 +276,13 @@ public class JobManager : MonoBehaviour
         
         if(playerJobs.Count > index)
         {
-            for(int i = playerJobs.Count; i < index; i--)
+            for(int i = 0; i < playerJobs.Count - index; i++)
             {
-                print(i);
-                Image icon = playerReadyObjs[i-1].GetComponentInChildren<Image>();
-                TextMeshProUGUI txt = playerReadyObjs[i-1].GetComponentInChildren<TextMeshProUGUI>();
+                Image icon = playerReadyObjs[2-i].GetComponentInChildren<Image>();
+                TextMeshProUGUI txt = playerReadyObjs[2-i].GetComponentInChildren<TextMeshProUGUI>();
 
-                icon.gameObject.SetActive(false);
-                txt.text = "";
+                icon.color = Color.black;
+                txt.text = "none";
             }
         }
     }
@@ -285,8 +290,7 @@ public class JobManager : MonoBehaviour
     public void ReadyBTNFouction()
     {
         isReady = !isReady;
-        var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
-        plyaer.ReciveReadySign(isReady);
+        player.ReciveReadySign(isReady);
     }
 
     public void ReciveReadySignPublic(NetworkList<bool> playerReady)
@@ -304,8 +308,7 @@ public class JobManager : MonoBehaviour
     // 게임 시작 관련 기능
     public void GameStartFouction()
     {
-        var plyaer = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
-        plyaer.ReciveGameStartSign();
+        player.ReciveGameStartSign();
     }
 
     [ClientRpc]

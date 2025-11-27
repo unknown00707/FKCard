@@ -34,9 +34,9 @@ public class CardPlayer : NetworkBehaviour
     [ServerRpc]
     private void RequestUserJobServerRpc(ulong index ,JobManager.Jobs job)
     {
-        GameManager gameManager = FindAnyObjectByType<GameManager>();
-        if(gameManager != null)
-            gameManager.InDicUserJobValue(index, job);
+        
+        if(GameManager.Instance != null)
+            GameManager.Instance.InDicUserJobValue(index, job);
     }
 
     // 대기 , 준비 관련
@@ -50,9 +50,8 @@ public class CardPlayer : NetworkBehaviour
     [ServerRpc]
     private void RequestUserReadySignServerRpc(bool isReady)
     {
-        GameManager gameManager = FindAnyObjectByType<GameManager>();
-        if(gameManager != null)
-            gameManager.InPlayerReadySign(OwnerClientId, isReady);
+        if(GameManager.Instance != null)
+            GameManager.Instance.InPlayerReadySign(OwnerClientId, isReady);
     }
 
     // 게임 시작 관련
@@ -66,10 +65,24 @@ public class CardPlayer : NetworkBehaviour
     [ServerRpc]
     private void RequestGameStartSignServerRpc()
     {
-        GameManager gameManager = FindAnyObjectByType<GameManager>();
-        if(gameManager != null)
-            gameManager.InGameStartSign();
+        if(GameManager.Instance != null)
+            GameManager.Instance.InGameStartSign();
     }
+
+    // 게임 카드 발동 관련
+    public void ReciveSignCardBatchOnStage(Transform cardData)
+    {
+        if (!IsOwner) return;
+
+        RequestCardBatchTopublicServerRpc(cardData);
+    }
+    [ServerRpc]
+    private void RequestCardBatchTopublicServerRpc(Transform cardData)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.RequsetMakeSameCardPublic(cardData, OwnerClientId);
+    }
+
     public void Damage(float damage)
     {
        
