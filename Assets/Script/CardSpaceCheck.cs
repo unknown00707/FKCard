@@ -10,80 +10,66 @@ public class CardSpaceCheck : MonoBehaviour
     public Transform[] spaces;
     public GameObject[] cardPrefabs;
     public GameObject canvers;
+    public bool isOkToGoInFC = true; // 들어갈 공간이 없다
     CardPlayer player;
+    private string initName;
     void Awake()
     {
-        if(NetworkManager.Singleton != null)
-            player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+    
+    }
 
-        CardSpacePrefabsInit();
+    void Update()
+    {
+        if(NetworkManager.Singleton == null) return;
+        
+        if (player == null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+            initName = cardPrefabs[NetworkManager.Singleton.LocalClientId].name;
+            CardSpacePrefabsInit(true);
+        }
+        
+        if(cardPrefabs[NetworkManager.Singleton.LocalClientId].name == initName)
+            isOkToGoInFC = true;
+        else
+            isOkToGoInFC = false;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
+        if(!isOkToGoInFC) return; 
+
         if(collision.gameObject.CompareTag("Card"))
         {
-            collision.gameObject.transform.SetParent(spaces[NetworkManager.Singleton.LocalClientId]);
-            player.ReciveSignCardBatchOnStage(collision.transform);
+            //collision.gameObject.transform.SetParent(spaces[NetworkManager.Singleton.LocalClientId]);// 들어온 놈
+            CardData cardData =  collision.gameObject.GetComponent<CardData>();
+            player.ReciveSignCardBatchOnStage(cardData.type, cardData.index);
+
+            collision.gameObject.SetActive(false);
+            stateCulManager.playerEmptyObjs.Remove(collision.GetComponent<Button>());
+            collision.transform.SetParent(stateCulManager.transform);
+
+            isOkToGoInFC = false;
+            // 카드 효과 저장 함수 발동
+            stateCulManager.CardSearchMatch();
+            
+            player.ReciveSignCardEffectReady(isOkToGoInFC); // -> false
         }
     }
 
-    public void CardSpacePrefabsInit()
+    public void CardSpacePrefabsInit(bool isFrist)
     {
         foreach(GameObject obj in cardPrefabs)
         {
+            if(isFrist)
+                obj.name = initName;
+
             obj.SetActive(false);
         }
     }
-
-    public void MakeCardPublicSame(Transform tr , ulong spaceId)
+    public void MakeCardPublicSame(JobManager.Jobs job, int index ,ulong spaceId)
     {
-        CardData card = tr.GetComponent<CardData>();
-        CardData changingCard = cardPrefabs[(int)spaceId].GetComponent<CardData>();
-        changingCard.cname = card.cname;
-        changingCard.hp = card.hp;
-        changingCard.damage = card.damage;
-        changingCard.cRIP = card.cRIP;
-        changingCard.heal = card.heal;
-        changingCard.image = card.image;
-        changingCard.cardExplain = card.cardExplain;
-        changingCard.index = card.index;
-        changingCard.type = card.type;
-        cardPrefabs[(int)spaceId].GetComponent<Button>().image.sprite = card.image;
-        
-        // 이름 / 수치 설정
-        TextMeshProUGUI[] textpro = cardPrefabs[(int)spaceId].GetComponentsInChildren<TextMeshProUGUI>();
-        textpro[0].text = changingCard.cname;  
-        textpro[1].text = changingCard.hp.ToString();  
-        textpro[2].text = changingCard.damage.ToString();  
-        textpro[0].color = Color.white;
-        textpro[1].color = Color.white;
-
-        switch(changingCard.type)
-        {
-            case JobManager.Jobs.defender:
-                cardPrefabs[(int)spaceId].name = stateCulManager.defenderObjPrefabs[changingCard.index].gameObject.name;
-                break;
-            case JobManager.Jobs.knight:
-                cardPrefabs[(int)spaceId].name = stateCulManager.knightObjPrefabs[changingCard.index].gameObject.name;
-                break;
-            case JobManager.Jobs.wizard:
-                cardPrefabs[(int)spaceId].name = stateCulManager.wizardObjPrefabs[changingCard.index].gameObject.name;
-                break;
-            case JobManager.Jobs.healler:
-                cardPrefabs[(int)spaceId].name = stateCulManager.healderObjPrefabs[changingCard.index].gameObject.name;
-                break;
-            case JobManager.Jobs.buffer:
-                cardPrefabs[(int)spaceId].name = stateCulManager.bufferObjPrefabs[changingCard.index].gameObject.name;
-                break;
-            case JobManager.Jobs.joker:
-                cardPrefabs[(int)spaceId].name = stateCulManager.jokerObjPrefabs[changingCard.index].gameObject.name;
-                break;
-            case JobManager.Jobs.convict:
-                cardPrefabs[(int)spaceId].name = stateCulManager.convictObjPrefabs[changingCard.index].gameObject.name;
-                break;
-        }
-        
+        stateCulManager.CardSameMakeObjPublic(job, index, cardPrefabs[(int)spaceId]);
         cardPrefabs[(int)spaceId].SetActive(true);
     }
 }

@@ -69,23 +69,73 @@ public class CardPlayer : NetworkBehaviour
             GameManager.Instance.InGameStartSign();
     }
 
+    public void ReciveGameSetReadySing(float hp, float dg, float crip)
+    {
+        if (!IsServer) return;
+
+        RequestGameUserSetSignServerRpc(hp, dg, crip);
+    }
+
+    [ServerRpc]
+    private void RequestGameUserSetSignServerRpc(float hp, float dg, float crip)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InGameUserJobStatSame(hp, dg, crip, OwnerClientId);
+    }
+
     // 게임 카드 발동 관련
-    public void ReciveSignCardBatchOnStage(Transform cardData)
+    public void ReciveSignCardBatchOnStage(JobManager.Jobs job, int index)
     {
         if (!IsOwner) return;
 
-        RequestCardBatchTopublicServerRpc(cardData);
-    }
-    [ServerRpc]
-    private void RequestCardBatchTopublicServerRpc(Transform cardData)
-    {
-        if(GameManager.Instance != null)
-            GameManager.Instance.RequsetMakeSameCardPublic(cardData, OwnerClientId);
+        RequestCardBatchTopublicServerRpc(job, index);
     }
 
-    public void Damage(float damage)
+    [ServerRpc]
+    private void RequestCardBatchTopublicServerRpc(JobManager.Jobs job, int index)
     {
-       
+        if(GameManager.Instance != null)
+            GameManager.Instance.RequsetMakeSameCardPublic(job, index, OwnerClientId);
+    }
+    public void ReciveSignCardEffectReady(bool isReady)
+    {
+        if (!IsOwner) return;
+
+        RequsetCardReadyToEffectServerRpc(isReady);
+    }
+
+    [ServerRpc]
+    private void RequsetCardReadyToEffectServerRpc(bool isReady)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InCardEffectReady(isReady, OwnerClientId);
+    }
+
+    // 유저가 발동한 카드로 인한 증가된 스텟 저장
+    public void UpUserStatIFO(int durTime, float hpIng, float dGing, float criticalIng)
+    {
+       if (!IsOwner) return;
+
+        RequetUpUserStatIFOServerRpc(durTime, hpIng, dGing, criticalIng);
+    }
+    [ServerRpc]
+    private void RequetUpUserStatIFOServerRpc(int durTime, float hpIng, float dGing, float criticalIng)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InUserUpStat(durTime, hpIng, dGing, criticalIng, OwnerClientId);
+    }
+    // 유저가 가할 데미지 증가
+    public void UpDamageUserInOut(float damage, int durTime)
+    {
+        if (!IsOwner) return;
+
+        RequsetUpDamageServerRpc(damage, durTime);
+    }
+    [ServerRpc]
+    private void RequsetUpDamageServerRpc(float damage , int durTime)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InDamageToUser(false , damage, OwnerClientId, durTime);
     }
 
 }
