@@ -54,7 +54,7 @@ public class JobManager : MonoBehaviour
         { "빈털털이", "카드획득 배율이 1.5배 (4개=6개)로 적용 / 전투중에 아군에게 카드양도 가능인데 카드 0개되면 바로 사망"},
         { "죄수", "카드획득 배율이 0.5배 (4개=2개)로 적용 / 자기가 뽑은 카드의 수치가 1.5배 / 공격력 높음"},
     };
-    Dictionary<int, string> arryValueList = new()
+    public Dictionary<int, string> arryValueList = new()
     {
         {0, "탱커"},
         {1, "근접 딜러"},
@@ -252,33 +252,7 @@ public class JobManager : MonoBehaviour
                 txt.text = playerJobs[i].ToString()+ "\n" + "";
 
             icon.color = Color.white;
-            switch(playerJobs[i].ToString())
-            {
-                case "defender":
-                    icon.sprite = jobIcons[0];
-                    break; 
-                case "knight":
-                    icon.sprite = jobIcons[1];
-                    break; 
-                case "wizard":
-                    icon.sprite = jobIcons[2];
-                    break; 
-                case "healler":
-                    icon.sprite = jobIcons[3];
-                    break; 
-                case "buffer":
-                    icon.sprite = jobIcons[4];
-                    break; 
-                case "joker":
-                    icon.sprite = jobIcons[5];
-                    break; 
-                case "unemployed":
-                    icon.sprite = jobIcons[6];
-                    break; 
-                case "convict":
-                    icon.sprite = jobIcons[7];
-                    break;
-            }
+            ChangeImgToIcon(icon ,playerJobs[i].ToString());
         }
         
         if(playerJobs.Count > index)
@@ -291,6 +265,36 @@ public class JobManager : MonoBehaviour
                 icon.color = Color.black;
                 txt.text = "none";
             }
+        }
+    }
+    public void ChangeImgToIcon(Image icon, string str)
+    {
+        switch(str)
+        {
+            case "defender":
+                icon.sprite = jobIcons[0];
+                break; 
+            case "knight":
+                icon.sprite = jobIcons[1];
+                break; 
+            case "wizard":
+                icon.sprite = jobIcons[2];
+                break; 
+            case "healler":
+                icon.sprite = jobIcons[3];
+                break; 
+            case "buffer":
+                icon.sprite = jobIcons[4];
+                break; 
+            case "joker":
+                icon.sprite = jobIcons[5];
+                break; 
+            case "unemployed":
+                icon.sprite = jobIcons[6];
+                break; 
+            case "convict":
+                icon.sprite = jobIcons[7];
+                break;
         }
     }
 

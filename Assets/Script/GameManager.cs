@@ -13,6 +13,7 @@ public class GameManager : NetworkBehaviour
     public NetworkList<FixedString64Bytes> playerJobs;
     public NetworkVariable<int> playerTotalNum = new();
     public NetworkVariable<int> totalTrunNum = new();
+    public NetworkList<bool> playerCardIsBuffer = new();
     public NetworkList<bool> playerReady = new(); // 직업 선택 준비
     public NetworkList<bool> playerCardSetReady = new(); // 턴 넘길 준비
     public NetworkVariable<bool> isPlayerTrun = new();
@@ -20,6 +21,7 @@ public class GameManager : NetworkBehaviour
     JobManager jobManager;
     CardSpaceCheck cardSpaceCheck;
     CardEffectAndCulDuringManager durManager;
+    StateCulManager stateCulManager;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,11 +34,17 @@ public class GameManager : NetworkBehaviour
         }
 
         jobManager = FindAnyObjectByType<JobManager>();
+        stateCulManager = FindAnyObjectByType<StateCulManager>();
         cardSpaceCheck = FindAnyObjectByType<CardSpaceCheck>();
         durManager = FindAnyObjectByType<CardEffectAndCulDuringManager>();
 
         playerJobs = new NetworkList<FixedString64Bytes>(
             new List<FixedString64Bytes>{new("0"), new("1"), new("2")},
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+        );
+        playerCardIsBuffer = new NetworkList<bool>(
+            new List<bool>{false, false, false},
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
@@ -68,6 +76,7 @@ public class GameManager : NetworkBehaviour
         playerTotalNum.OnValueChanged += OnPlayerTotalNumChanged;
         isPlayerTrun.OnValueChanged += OnPlayerTrunIsOn;
         playerJobs.OnListChanged += OnPlayerJobsChanged;
+        playerCardIsBuffer.OnListChanged += OnPlayerCardIsBuffer;
         playerReady.OnListChanged += OnPlayerReadyChanged;
         playerCardSetReady.OnListChanged += OnPlayerTrunCulChanged;
 
@@ -80,6 +89,7 @@ public class GameManager : NetworkBehaviour
         playerTotalNum.OnValueChanged -= OnPlayerTotalNumChanged;
         isPlayerTrun.OnValueChanged -= OnPlayerTrunIsOn;
         playerJobs.OnListChanged -= OnPlayerJobsChanged;
+        playerCardIsBuffer.OnListChanged -= OnPlayerCardIsBuffer;
         playerReady.OnListChanged -= OnPlayerReadyChanged;
         playerCardSetReady.OnListChanged -= OnPlayerTrunCulChanged;
     }
@@ -111,6 +121,16 @@ public class GameManager : NetworkBehaviour
         }
 
         isPlayerTrun.Value = false; // 턴 넘어갈 타이밍 , 보스/몬스터 턴
+    }
+    void OnPlayerCardIsBuffer(NetworkListEvent<bool> changeEvent)
+    {
+        for(int i = 0; i < playerTotalNum.Value; i++)
+        {
+            if(playerCardIsBuffer[i] != false)
+                return;
+            
+            stateCulManager.isAttackCard = false;
+        }
     }
 
     void OnPlayerTrunIsOn(bool oldValue, bool newValue)
@@ -200,6 +220,11 @@ public class GameManager : NetworkBehaviour
     {
         playerCardSetReady[(int)id] = isReady;
     }
+    //유저의 카드가 버퍼 관련 카드인지 아닌지 저장
+    public void InSignIsBufferCard(bool isBufferCard, ulong id)
+    {
+        playerCardIsBuffer[(int)id] = isBufferCard;
+    }
     // 유저 스텟 상승 효과 정보 저장
     public void InUserUpStat(int durTime, float hpIng, float dGing, float criticalIng, ulong id)
     {
@@ -213,16 +238,16 @@ public class GameManager : NetworkBehaviour
         durManager.ReciveCardEffect(durTime, hpIng, dGing, criticalIng, id);
     }
     // 유저가 입힐 / 입을 데미지 저장
-    public void InDamageToUser(bool isToUser , float damage, ulong id, int durTime) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
+    public void InDamageToUser(bool isToUser , float damage, ulong id, int durTime, int enemyID) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
     {
         if(!IsServer) return;
 
-        RequsetUpDamageIFOClientRpc(isToUser, damage, id, totalTrunNum.Value , durTime);
+        RequsetUpDamageIFOClientRpc(isToUser, damage, id, totalTrunNum.Value , durTime, enemyID);
     }
     [ClientRpc]
-    private void RequsetUpDamageIFOClientRpc(bool isToUser, float damage, ulong id, int currentTrunNum , int durTime)
+    private void RequsetUpDamageIFOClientRpc(bool isToUser, float damage, ulong id, int currentTrunNum , int durTime, int enemyID)
     {
-        durManager.ReciveCardEffectDamage(isToUser, damage, id, currentTrunNum , durTime);
+        durManager.ReciveCardEffectDamage(isToUser, damage, id, currentTrunNum , durTime, enemyID);
     }
 
     public override void OnDestroy()

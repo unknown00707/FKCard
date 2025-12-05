@@ -110,32 +110,45 @@ public class CardPlayer : NetworkBehaviour
         if(GameManager.Instance != null)
             GameManager.Instance.InCardEffectReady(isReady, OwnerClientId);
     }
-
-    // 유저가 발동한 카드로 인한 증가된 스텟 저장
-    public void UpUserStatIFO(int durTime, float hpIng, float dGing, float criticalIng)
-    {
-       if (!IsOwner) return;
-
-        RequetUpUserStatIFOServerRpc(durTime, hpIng, dGing, criticalIng);
-    }
-    [ServerRpc]
-    private void RequetUpUserStatIFOServerRpc(int durTime, float hpIng, float dGing, float criticalIng)
-    {
-        if(GameManager.Instance != null)
-            GameManager.Instance.InUserUpStat(durTime, hpIng, dGing, criticalIng, OwnerClientId);
-    }
-    // 유저가 가할 데미지 증가
-    public void UpDamageUserInOut(float damage, int durTime)
+    // 유저가 낼 카드가 버퍼 관련 카드인지 아닌지 받기
+    public void ReciveSignIsBufferCard(bool isBuffeCard)
     {
         if (!IsOwner) return;
 
-        RequsetUpDamageServerRpc(damage, durTime);
+        RequestSignIsBufferCardServerRpc(isBuffeCard);
     }
     [ServerRpc]
-    private void RequsetUpDamageServerRpc(float damage , int durTime)
+    private void RequestSignIsBufferCardServerRpc(bool isBuffeCard)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InDamageToUser(false , damage, OwnerClientId, durTime);
+            GameManager.Instance.InSignIsBufferCard(isBuffeCard, OwnerClientId);
+    }
+
+    // 유저가 발동한 카드로 인한 증가된 스텟 저장
+    public void UpUserStatIFO(int durTime, int userID ,float hpIng, float dGing, float criticalIng)
+    {
+       if (!IsOwner) return;
+
+        RequetUpUserStatIFOServerRpc(durTime, userID, hpIng, dGing, criticalIng);
+    }
+    [ServerRpc]
+    private void RequetUpUserStatIFOServerRpc(int durTime,int userID, float hpIng, float dGing, float criticalIng)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InUserUpStat(durTime, hpIng, dGing, criticalIng, (ulong)userID);
+    }
+    // 유저가 가할 데미지 증가
+    public void UpDamageUserInOut(float damage, int durTime, int enemyID)
+    {
+        if (!IsOwner) return;
+
+        RequsetUpDamageServerRpc(damage, durTime, enemyID);
+    }
+    [ServerRpc]
+    private void RequsetUpDamageServerRpc(float damage , int durTime, int enemyID)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InDamageToUser(false , damage, OwnerClientId, durTime, enemyID);
     }
 
 }

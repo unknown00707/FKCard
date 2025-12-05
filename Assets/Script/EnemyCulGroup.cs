@@ -13,6 +13,8 @@ public class EnemyCulGroup : MonoBehaviour
 {
     public StateCulManager stateCulManager;
     public Button[] enemyPrefabs;
+    public TextMeshProUGUI totalHP;
+    public TextMeshProUGUI totalDG;
     [Header("Monster")]
     public List<EnemyMonster> stageMonsters;
     [Header("Boss")]
@@ -21,12 +23,8 @@ public class EnemyCulGroup : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        foreach(Button btn in enemyPrefabs)
-        {
-            btn.gameObject.SetActive(false);
-        }
-
         MakeSameInit(0,1);
+        MakeSameTotalState();
     }
 
     // Update is called once per frame
@@ -42,6 +40,11 @@ public class EnemyCulGroup : MonoBehaviour
 
     void MakeSameInit(int stageNum, int howMuch)
     {
+        foreach(Button btn in enemyPrefabs)
+        {
+            btn.gameObject.SetActive(false);
+        }
+
         for(int i = 0; i < howMuch; i ++)
         {
             EnemyCardData enemyCardData = stageMonsters[stageNum].monsters[RanMonsterGetValue(stageNum)].GetComponent<EnemyCardData>();
@@ -61,5 +64,24 @@ public class EnemyCulGroup : MonoBehaviour
             textpro[0].text = prefabData.enemyHP.ToString();
             textpro[1].text = prefabData.enemyDamage.ToString();
         }
+    }
+
+    void MakeSameTotalState()
+    {
+        float hp = 0;
+        float dg = 0;
+
+        foreach(Button btn in enemyPrefabs)
+        {
+            if(btn.gameObject.activeInHierarchy)
+            {
+                EnemyCardData enemyCardData = btn.GetComponent<EnemyCardData>();
+                hp += enemyCardData.enemyHP;
+                dg += enemyCardData.enemyDamage;
+            }
+        }
+
+        totalHP.text = hp.ToString();
+        totalDG.text = dg.ToString();
     }
 }

@@ -16,6 +16,7 @@ public class UserAoubtDamage
 {
     public float hitDamage; // 준 피해
     public float inDamage; // 받은 피해
+    public int hitObjIndex;
 }
 [System.Serializable]
 public class UserStat
@@ -39,10 +40,10 @@ public class UserDamgeGroup
 
 public class CardEffectAndCulDuringManager : MonoBehaviour
 {
-    public float[][] userState = new float[3][]; // 초기 유저의 정보 -> 안 변함
+    public float[][] userState = new float[3][]; // 초기 유저의 정보 -> 안 변함 -> 스테이지 변하면 변함
     // 유저의 지속 기간에 따른 스텟 변화 저장
     public List<UserTimeListWrapper> userChangingState = new(); 
-    public List<UserStat> userTotalStates = new(); // 총 현재의 유저들의 스텟
+    public List<UserStat> userTotalStates = new(); // 현재 턴의 총 유저들의 스텟
     public List<UserDamgeGroup> userAboutDamages = new(); // 데미지 관련 리스트
 
     void Awake()
@@ -92,20 +93,31 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
 
     void UpStatUserCurentTates(List<UserTime> userPlus, ulong userID) // 증가된 유저의 스텟을 최종 스텟에 업데이트
     {
-        foreach (UserTime lit in userPlus)
+        foreach(UserTime userTime in userPlus)
         {
-            print(lit.durTime + "/" + lit.chaingingHp + "/" + lit.chaingingDG + "/" + lit.chaingingCritical);
+            if(userTime.durTime == 0)
+            {
+                userPlus.Remove(userTime);
+            }
+            else
+            {
+                userTotalStates[(int)userID].hp += userTime.chaingingHp;
+                userTotalStates[(int)userID].dG += userTime.chaingingDG;
+                userTotalStates[(int)userID].critical += userTime.chaingingCritical;
+            }
+            
+            userTime.durTime--;
         }
-        //userCurentStates[(int)userID].hp += userPlus[0].chaingingHp;
     }
 
-    public void ReciveCardEffectDamage(bool isToUser, float damage, ulong id, int currentTrunNum, int durTime) // 데미지 정보 저장
+    public void ReciveCardEffectDamage(bool isToUser, float damage, ulong id, int currentTrunNum, int durTime, int enemyID) // 데미지 정보 저장
     {
         UserAoubtDamage userDamage = new ();
         if(isToUser)
             userDamage.inDamage = damage;
         else
             userDamage.hitDamage = damage;
+        userDamage.hitObjIndex = enemyID;
 
         print(userAboutDamages[(int)id].damage.Count() + "/" + currentTrunNum + " : 데이터 저장 시작");        
         if(userAboutDamages[(int)id].damage.Count() == 0 && !isToUser && durTime == 1) // 초기 데미지 저장
@@ -169,6 +181,11 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
             print("받는 데미지 데이터 저장 성공");
         }
         print("데이터 저장 종료");
+    }
+
+    public void ReSendTotalDamageToEnemy()
+    {
+        
     }
 
 }
