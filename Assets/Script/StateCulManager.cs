@@ -17,6 +17,7 @@ public class StateCulManager : MonoBehaviour
     public CardSpaceCheck cardSpaceCheck;
     public CardEffectAndCulDuringManager cEACDManager;
     public ChooseEnemyOrTeam chooseEnemyOrTeam;
+    public PlayerJobSkill playerJobSkill;
     CardPlayer player;
     public GameObject canvers;
     public int initalCardN = 4;
@@ -29,10 +30,6 @@ public class StateCulManager : MonoBehaviour
     public float userDamge = 10;
     public float userCRIP = 1; // 치명타 퍼센트 100%
     public ulong userID;
-    [Header("Target")]
-    public int toUserID; // 내가 아닌 다른 사람
-    public int toEnemyID;
-    public bool isOkToStorData = false;
     [Header("Card")]
     public string cardName;
     public float cardHp;
@@ -425,118 +422,14 @@ public class StateCulManager : MonoBehaviour
         }
     }
 
-    public void ReciveAnotherUserID(int index, bool isToPlayer)
-    {
-        if(isToPlayer)
-            toUserID = index;
-        else
-            toEnemyID = index;
-
-        isOkToStorData = true;
-    }
-
-    IEnumerator WaitForCondition(bool isToSelf, int durTime, float hpUp, float dgUp, float criticalUp) // true -> 나 자신 / false -> 타인 , 지속 시간 , hp , dg, cri
-    {
-        print("선택을 기다림 . . .");
-
-        yield return new WaitUntil(() => isOkToStorData);
-
-        print("버프 신호 들어옴");
-
-        if(isToSelf)
-            player.UpUserStatIFO(durTime, (int)userID, hpUp ,dgUp,criticalUp);
-        else
-            player.UpUserStatIFO(durTime, toUserID, hpUp ,dgUp,criticalUp);
-    
-        print("버프 저장");
-        player.ReciveSignIsBufferCard(false); // -> 버프 카드의 효과 끝을 알림
-
-    }
-
-    IEnumerator WaitForConditionForAttack(float attackDg , int durTime) 
-    {
-        print("공격 가능 신호 대기 중 . . .");
-        yield return new WaitUntil(() => !isAttackCard);
-        print("공격 버프 시작");
-        player.UpDamageUserInOut(attackDg,durTime,toEnemyID); 
-    }
-
     // 카드 종류 확인해서 type 에 해당하는 함수 실행
     public void CardSearchMatch()
     {
         switch (cardeType)
         {
             case JobManager.Jobs.defender:
-                DefenderSkills(cardIndex);
+                playerJobSkill.DefenderSkills(cardIndex);
                 break;
         }
     }
-
-    // index에 따른 탱커 스킬
-    void DefenderSkills(int index)
-    {
-        switch(index)
-        {
-            case 0:
-                player.ReciveSignIsBufferCard(true); // true - > 버프 관련 카드 / false - > 공격 카드
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-                break;
-            case 1:
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true , false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-                isAttackCard = true;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false , false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForConditionForAttack(70,1));
-                break;
-            case 2:
-                
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForConditionForAttack(70,1));
-                break;
-            case 3:
-                
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForConditionForAttack(70,1));
-                break;
-            case 4:
-                
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForConditionForAttack(70,1));
-                break;
-            case 5:
-                
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForConditionForAttack(70,1));
-                break;
-            case 6:
-                
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForConditionForAttack(70,1));
-                break;
-            case 7:
-          
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForCondition(true, 1,cEACDManager.userTotalStates[(int)userID].hp*((float)15/100),0,0)); 
-
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false); // true -> 아군 / false -> 적군 // true -> 나 자신 / false -> 타인
-                StartCoroutine(WaitForConditionForAttack(70,1));
-                break;
-        }
-    }
-    
 }

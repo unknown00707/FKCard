@@ -84,4 +84,15 @@ public class EnemyCulGroup : MonoBehaviour
         totalHP.text = hp.ToString();
         totalDG.text = dg.ToString();
     }
+
+    public void RequsetTheDamageToMonster(int stageNum,List<float> fromUsersDamage)
+    {
+        for(int i = 0; i < fromUsersDamage.Count; i++)
+        {
+            if(stageMonsters[stageNum].monsters[i].gameObject.activeInHierarchy)
+                stageMonsters[stageNum].monsters[i].GetComponent<EnemyCardData>().enemyHP -= fromUsersDamage[i];
+        }
+
+        print("적에게 데미지 가하기 성공!");
+    }
 }

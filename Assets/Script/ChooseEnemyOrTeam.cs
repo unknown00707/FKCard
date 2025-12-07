@@ -6,9 +6,9 @@ using UnityEngine.UI;
 
 public class ChooseEnemyOrTeam : MonoBehaviour
 {
-    public StateCulManager stateCulManager;
     public JobManager jobManager;
     public EnemyCulGroup enemyCulGroup;
+    public PlayerJobSkill playerJobSkill;
     public GameObject chooseObj;
     public Button[] seletedBTN; 
     public bool isForPlayer;
@@ -30,7 +30,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
         {
             if(isMe || (GameManager.Instance.playerTotalNum.Value == 1))
             {
-                stateCulManager.ReciveAnotherUserID(GameManager.Instance.playerTotalNum.Value, isForPlayer);
+                playerJobSkill.ReciveTargetUserIDFromChoose(NetworkManager.Singleton.LocalClientId, isForPlayer);
                 return;
             }
             else
@@ -60,7 +60,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
             }
             if(activeNum == 1)
             {
-                stateCulManager.ReciveAnotherUserID(0, isForPlayer);
+                playerJobSkill.ReciveTargetUserIDFromChoose(0, isForPlayer);
                 return;
             }
             for(int i = 0; i < enemyCulGroup.enemyPrefabs.Count(); i++)
@@ -74,8 +74,8 @@ public class ChooseEnemyOrTeam : MonoBehaviour
         chooseObj.SetActive(true);
     }
 
-    public void EndOfSelect(int index) // 선택이 끝났을 때
+    public void EndOfSelect(ulong index) // 선택이 끝났을 때
     {
-        stateCulManager.ReciveAnotherUserID(index, isForPlayer);
+        playerJobSkill.ReciveTargetUserIDFromChoose(index, isForPlayer);
     }
 }

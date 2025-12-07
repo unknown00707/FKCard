@@ -1504,6 +1504,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 316671971}
   m_CullTransparentMesh: 1
+--- !u!1 &361320981
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 361320982}
+  - component: {fileID: 361320983}
+  m_Layer: 0
+  m_Name: PlayerJobSkillManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &361320982
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361320981}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &361320983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361320981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fdfda872b2af65468b58fa9be2bf5c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerJobSkill
+  ceacdManager: {fileID: 1054227398}
+  toUserID: 0
+  toEnemyID: 0
+  upStateGroups: []
+  userDamaingChangTemproy: []
+  isSingleAttack: 0
 --- !u!1 &393212971
 GameObject:
   m_ObjectHideFlags: 0
@@ -3907,7 +3957,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &994115226
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4050,6 +4100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardEffectAndCulDuringManager
   userChangingState: []
+  userDamaingChangs: []
   userTotalStates: []
   userAboutDamages: []
 --- !u!1 &1069000737
@@ -6957,9 +7008,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfc726ca5e2c0fa46bca4bcab37086c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChooseEnemyOrTeam
-  stateCulManager: {fileID: 2092390122}
   jobManager: {fileID: 889574016}
   enemyCulGroup: {fileID: 1148699780}
+  playerJobSkill: {fileID: 361320983}
   chooseObj: {fileID: 994115225}
   seletedBTN:
   - {fileID: 479828325}
@@ -7211,6 +7262,7 @@ MonoBehaviour:
   cardSpaceCheck: {fileID: 1392324696}
   cEACDManager: {fileID: 1054227398}
   chooseEnemyOrTeam: {fileID: 1965944028}
+  playerJobSkill: {fileID: 361320983}
   canvers: {fileID: 539838864}
   initalCardN: 4
   userT: {fileID: 811565818}
@@ -7219,9 +7271,6 @@ MonoBehaviour:
   userDamge: 10
   userCRIP: 1
   userID: 0
-  toUserID: 0
-  toEnemyID: 0
-  isOkToStorData: 0
   cardName: 
   cardHp: 0
   cardDamage: 0
@@ -7231,6 +7280,7 @@ MonoBehaviour:
   cardeType: 0
   cardImage: {fileID: 0}
   cardExplain: 
+  isAttackCard: 0
   cardEpObj: {fileID: 1863445646}
   cardEpNameTxt: {fileID: 4590563124942811175}
   cardEpTxt: {fileID: 1945427322}
@@ -11282,3 +11332,4 @@ SceneRoots:
   - {fileID: 889574015}
   - {fileID: 1054227397}
   - {fileID: 393212973}
+  - {fileID: 361320982}

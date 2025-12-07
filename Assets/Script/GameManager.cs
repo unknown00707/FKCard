@@ -13,15 +13,18 @@ public class GameManager : NetworkBehaviour
     public NetworkList<FixedString64Bytes> playerJobs;
     public NetworkVariable<int> playerTotalNum = new();
     public NetworkVariable<int> totalTrunNum = new();
+    public NetworkVariable<int> currentStageNum = new();
     public NetworkList<bool> playerCardIsBuffer = new();
     public NetworkList<bool> playerReady = new(); // 직업 선택 준비
     public NetworkList<bool> playerCardSetReady = new(); // 턴 넘길 준비
     public NetworkVariable<bool> isPlayerTrun = new();
 
+    EnemyCulGroup enemyCulGroup;
     JobManager jobManager;
     CardSpaceCheck cardSpaceCheck;
     CardEffectAndCulDuringManager durManager;
     StateCulManager stateCulManager;
+    PlayerJobSkill playerJobSkill;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -37,6 +40,8 @@ public class GameManager : NetworkBehaviour
         stateCulManager = FindAnyObjectByType<StateCulManager>();
         cardSpaceCheck = FindAnyObjectByType<CardSpaceCheck>();
         durManager = FindAnyObjectByType<CardEffectAndCulDuringManager>();
+        enemyCulGroup = FindAnyObjectByType<EnemyCulGroup>();
+        playerJobSkill = FindAnyObjectByType<PlayerJobSkill>();
 
         playerJobs = new NetworkList<FixedString64Bytes>(
             new List<FixedString64Bytes>{new("0"), new("1"), new("2")},
@@ -70,6 +75,7 @@ public class GameManager : NetworkBehaviour
             playerTotalNum.Value = NetworkManager.Singleton.ConnectedClientsList.Count;
             isPlayerTrun.Value = true;
             totalTrunNum.Value = 0;
+            currentStageNum.Value = 0;
         }
 
         // 리스너 등록
@@ -128,9 +134,10 @@ public class GameManager : NetworkBehaviour
         {
             if(playerCardIsBuffer[i] != false)
                 return;
-            
-            stateCulManager.isAttackCard = false;
         }
+
+        playerJobSkill.ReciveUpUserStateByBufferCard();
+        playerJobSkill.ReciveUpUserDamage();
     }
 
     void OnPlayerTrunIsOn(bool oldValue, bool newValue)
@@ -147,6 +154,13 @@ public class GameManager : NetworkBehaviour
     {
         if(!isPlayerTrun)
         {
+            List<float> forMonsterDamage = new() {0,0,0};
+            for(int i = 0; i < playerTotalNum.Value; i++)
+            {
+                //forMonsterDamage[i] = durManager.userAboutDamages[i].damage[totalTrunNum.Value].hitDamage;
+            }
+            enemyCulGroup.RequsetTheDamageToMonster(currentStageNum.Value, forMonsterDamage);
+
             // 턴에 해당하는 보스에게 데미지 주는 코드 . . .
         }
 
@@ -225,29 +239,53 @@ public class GameManager : NetworkBehaviour
     {
         playerCardIsBuffer[(int)id] = isBufferCard;
     }
-    // 유저 스텟 상승 효과 정보 저장
-    public void InUserUpStat(int durTime, float hpIng, float dGing, float criticalIng, ulong id)
+    // 유저의 버프 스텟을 임시 저장
+    public void InStorUserUpStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, int damageMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
     {
         if(!IsServer) return;
 
-        RequsetUpUserStatClientRpc(durTime, hpIng, dGing, criticalIng, id);
+        RequsetUpUserStatTemproyClientRpc(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical , damageMultiplier, sendUserID, cardType, cardIndex);
+        playerCardIsBuffer[(int)sendUserID] = false; // --> 버프 카드 사용 한 걸 채크
     }
     [ClientRpc]
-    private void RequsetUpUserStatClientRpc(int durTime, float hpIng, float dGing, float criticalIng, ulong id)
+    private void RequsetUpUserStatTemproyClientRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, int damageMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
     {
-        durManager.ReciveCardEffect(durTime, hpIng, dGing, criticalIng, id);
+        playerJobSkill.ReciveUpUserStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, sendUserID, cardType, cardIndex);
+    }
+    public void InStorUserDamageTemproy(ulong userId, bool isForEnemy, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, ulong sendUserID)
+    {
+        if(!IsServer) return;
+
+        RequsetUpDamageTemproyClientRpc(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, sendUserID);
+    }
+    [ClientRpc]
+    private void RequsetUpDamageTemproyClientRpc(ulong userId, bool isForEnemy, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, ulong sendUserID)
+    {
+        playerJobSkill.ReciveUpDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, sendUserID);
+    }
+    // 유저 스텟 상승 효과 정보 저장
+    public void InUserUpStat(float hpIng, float dGing, float criticalIng, int damageMultiplier, ulong id, JobManager.Jobs cardType, int cardIndex)
+    {
+        if(!IsServer) return;
+
+        RequsetUpUserStatClientRpc(hpIng, dGing, criticalIng, damageMultiplier, id,cardType,cardIndex);
+    }
+    [ClientRpc]
+    private void RequsetUpUserStatClientRpc(float hpIng, float dGing, float criticalIng, int damageMultiplier, ulong id, JobManager.Jobs cardType, int cardIndex)
+    {
+        durManager.ReciveUpStatUserByBuffer(hpIng, dGing, criticalIng, damageMultiplier, id, cardType, cardIndex);
     }
     // 유저가 입힐 / 입을 데미지 저장
-    public void InDamageToUser(bool isToUser , float damage, ulong id, int durTime, int enemyID) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
+    public void InDamageToUser(ulong enemyID, bool isToEnemy, ulong sendUserID ,float damageFromHp, float damagFromDg, float damageFromTakenDg) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
     {
         if(!IsServer) return;
 
-        RequsetUpDamageIFOClientRpc(isToUser, damage, id, totalTrunNum.Value , durTime, enemyID);
+        RequsetUpDamageIFOClientRpc(enemyID , isToEnemy, sendUserID, damageFromHp, damagFromDg, damageFromTakenDg);
     }
     [ClientRpc]
-    private void RequsetUpDamageIFOClientRpc(bool isToUser, float damage, ulong id, int currentTrunNum , int durTime, int enemyID)
+    private void RequsetUpDamageIFOClientRpc(ulong enemyID, bool isToEnemy, ulong sendUserID ,float damageFromHp, float damagFromDg, float damageFromTakenDg)
     {
-        durManager.ReciveCardEffectDamage(isToUser, damage, id, currentTrunNum , durTime, enemyID);
+        durManager.ReciveDamageDataFromTemproy(enemyID, isToEnemy, sendUserID, damageFromHp, damagFromDg , damageFromTakenDg);
     }
 
     public override void OnDestroy()
