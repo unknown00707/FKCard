@@ -69,18 +69,18 @@ public class CardPlayer : NetworkBehaviour
             GameManager.Instance.InGameStartSign();
     }
 
-    public void ReciveGameSetReadySing(float hp, float dg, float crip)
+    public void ReciveGameSetReadySing(float hp, float dg, float crip, float damageTakenMultiplier, float beneficialEffectMultiplier)
     {
         if (!IsServer) return;
 
-        RequestGameUserSetSignServerRpc(hp, dg, crip);
+        RequestGameUserSetSignServerRpc(hp, dg, crip, damageTakenMultiplier, beneficialEffectMultiplier);
     }
 
     [ServerRpc]
-    private void RequestGameUserSetSignServerRpc(float hp, float dg, float crip)
+    private void RequestGameUserSetSignServerRpc(float hp, float dg, float crip,float damageTakenMultiplier, float beneficialEffectMultiplier)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InGameUserJobStatSame(hp, dg, crip, OwnerClientId);
+            GameManager.Instance.InGameUserJobStatSame(hp, dg, crip, damageTakenMultiplier, beneficialEffectMultiplier, OwnerClientId);
     }
 
     // 게임 카드 발동 관련
@@ -110,69 +110,72 @@ public class CardPlayer : NetworkBehaviour
         if(GameManager.Instance != null)
             GameManager.Instance.InCardEffectReady(isReady, OwnerClientId);
     }
-    // 유저가 낼 카드가 버퍼 관련 카드인지 아닌지 받기
-    public void ReciveSignIsBufferCard(bool isBuffeCard)
-    {
-        if (!IsOwner) return;
-
-        RequestSignIsBufferCardServerRpc(isBuffeCard);
-    }
-    [ServerRpc]
-    private void RequestSignIsBufferCardServerRpc(bool isBuffeCard)
-    {
-        if(GameManager.Instance != null)
-            GameManager.Instance.InSignIsBufferCard(isBuffeCard, OwnerClientId);
-    }
 
     // 유저가 발동한 카드로 인한 증가된 스텟 저장
-    public void UpUserStatTemporary(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, int damageMultiplier, JobManager.Jobs cardType, int cardIndex)
+    public void UpUserStatTemporary(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
         if (!IsOwner) return;
 
-        UpUserStatTemporaryServerRpc(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, cardType, cardIndex);
+        UpUserStatTemporaryServerRpc(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier,cardType, cardIndex);
     }
     [ServerRpc]
-    private void UpUserStatTemporaryServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, int damageMultiplier, JobManager.Jobs cardType, int cardIndex)
+    private void UpUserStatTemporaryServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InStorUserUpStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, OwnerClientId, cardType, cardIndex);
+            GameManager.Instance.InStorUserUpStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier,OwnerClientId, cardType, cardIndex);
     }
-    public void UpUserDamageTemporary(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg)
+    public void UpUserDamageTemporary(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
     {
         if (!IsOwner) return;
 
-        UpUserDamageTemporaryServerRpc(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg);
+        UpUserDamageTemporaryServerRpc(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits);
     }
     [ServerRpc]
-    private void UpUserDamageTemporaryServerRpc(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg)
+    private void UpUserDamageTemporaryServerRpc(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InStorUserDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, OwnerClientId);
+            GameManager.Instance.InStorUserDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits, OwnerClientId);
     }
-    public void UpUserStatIFO(int userID ,float hpIng, float dGing, float criticalIng, int damageMultiplier, JobManager.Jobs cardType, int cardIndex)
+    public void UpUserStatIFO(int userID ,float hpIng, float dGing, float criticalIng, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
        if (!IsOwner) return;
 
-        RequetUpUserStatIFOServerRpc(userID, hpIng, dGing, criticalIng, damageMultiplier, cardType, cardIndex);
+        RequetUpUserStatIFOServerRpc(userID, hpIng, dGing, criticalIng, damageMultiplier, beneficialEffectMultiplier,cardType, cardIndex);
     }
     [ServerRpc]
-    private void RequetUpUserStatIFOServerRpc(int userID, float hpIng, float dGing, float criticalIng, int damageMultiplier, JobManager.Jobs cardType, int cardIndex)
+    private void RequetUpUserStatIFOServerRpc(int userID, float hpIng, float dGing, float criticalIng, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InUserUpStat(hpIng, dGing, criticalIng, damageMultiplier, (ulong)userID,  cardType, cardIndex);
+            GameManager.Instance.InUserUpStat(hpIng, dGing, criticalIng, damageMultiplier, beneficialEffectMultiplier, (ulong)userID,  cardType, cardIndex);
     }
     // 유저가 가할 데미지 증가
-    public void UpDamageUserInOut(ulong enemyID, bool isToEnemy, float damageFromHp, float damagFromDg, float damageFromTakenDg)
+    public void UpDamageUserInOut(ulong enemyID, bool isToEnemy, float damageFromHp, float damagFromDg, float damageFromTakenDg, int numberOfHits)
     {
         if (!IsOwner) return;
 
-        RequsetUpDamageServerRpc(enemyID, isToEnemy, damageFromHp, damagFromDg, damageFromTakenDg);
+        RequsetUpDamageServerRpc(enemyID, isToEnemy, damageFromHp, damagFromDg, damageFromTakenDg, numberOfHits);
     }
     [ServerRpc]
-    private void RequsetUpDamageServerRpc(ulong enemyID, bool isToEnemy, float damageFromHp, float damagFromDg, float damageFromTakenDg)
+    private void RequsetUpDamageServerRpc(ulong enemyID, bool isToEnemy, float damageFromHp, float damagFromDg, float damageFromTakenDg, int numberOfHits)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InDamageToUser(enemyID , isToEnemy, OwnerClientId, damageFromHp, damagFromDg, damageFromTakenDg);
+            GameManager.Instance.InDamageToUser(enemyID , isToEnemy, OwnerClientId, damageFromHp, damagFromDg, damageFromTakenDg, numberOfHits);
     }
+    // 유저가 줄 힐량 전송
+    public void ToHealTemporary(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
+    {
+        if (!IsOwner) return;
 
+        RequsetUpToUserHealTemporayServerRpc(userId, startDurTimeTrun, endDurTineTrun, healAmount);
+    }
+    [ServerRpc]
+    private void RequsetUpToUserHealTemporayServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InComeHealTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
+    }
+    public void UpHealToUser(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
+    {
+        
+    }
 }

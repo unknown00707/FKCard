@@ -26,9 +26,11 @@ public class StateCulManager : MonoBehaviour
     public GameObject minJCardsPerfab;
 
     [Header("stat")]
-    public float userHP = 100;
-    public float userDamge = 10;
-    public float userCRIP = 1; // 치명타 퍼센트 100%
+    public float userHP;
+    public float userDamge;
+    public float userCRIP; // 치명타 퍼센트 100%
+    public float userDamageMultipler;
+    public float userBeneficialEffectMultiplier;
     public ulong userID;
     [Header("Card")]
     public string cardName;
@@ -120,6 +122,8 @@ public class StateCulManager : MonoBehaviour
         userHP = userStatArray[0];
         userDamge = userStatArray[1];
         userCRIP = userStatArray[2];
+        userDamageMultipler = userStatArray[3];
+        userBeneficialEffectMultiplier = userStatArray[4];
 
         // '백수'는 로직이 완전히 다르므로 별도 처리
         if (jobManager.userJobState == JobManager.Jobs.unemployed)
@@ -178,7 +182,7 @@ public class StateCulManager : MonoBehaviour
             }
         }
 
-        player.ReciveGameSetReadySing(userHP, userDamge, userCRIP);
+        player.ReciveGameSetReadySing(userHP, userDamge, userCRIP, userDamageMultipler, userBeneficialEffectMultiplier);
     }
     void CardInitEmptyToJobs(bool isInit , int index)
     {
@@ -395,6 +399,23 @@ public class StateCulManager : MonoBehaviour
         {
             case JobManager.Jobs.defender:
                 playerJobSkill.DefenderSkills(cardIndex);
+                break;
+            case JobManager.Jobs.knight:
+                playerJobSkill.KnightSkills(cardIndex);
+                break;
+            case JobManager.Jobs.wizard:
+                playerJobSkill.WizardSkills(cardIndex);
+                break;
+            case JobManager.Jobs.healler:
+                playerJobSkill.HeaderSkills(cardIndex);
+                break;
+            case JobManager.Jobs.buffer:
+                break;
+            case JobManager.Jobs.joker:
+                break;
+            case JobManager.Jobs.unemployed:
+                break;
+            case JobManager.Jobs.convict:
                 break;
         }
     }

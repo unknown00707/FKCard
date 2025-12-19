@@ -3,19 +3,23 @@ using Unity.Netcode;
 using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
+using System.Collections;
 
 public class CardSpaceCheck : MonoBehaviour
 {
+    private static WaitForSecondsRealtime _waitForSecondsRealtime10 = new(10f);
     public StateCulManager stateCulManager;
     public Transform[] spaces;
     public GameObject[] cardPrefabs;
     public GameObject canvers;
     public bool isOkToGoInFC = true; // 들어갈 공간이 없다
+    public Coroutine runningCoroutine;
     CardPlayer player;
     private string initName;
     void Awake()
     {
-    
+        isOkToGoInFC = true;
     }
 
     void Update()
@@ -29,7 +33,7 @@ public class CardSpaceCheck : MonoBehaviour
             CardSpacePrefabsInit(true);
         }
         
-        if(cardPrefabs[NetworkManager.Singleton.LocalClientId].name == initName)
+        if((cardPrefabs[NetworkManager.Singleton.LocalClientId].name == initName) && isOkToGoInFC)
             isOkToGoInFC = true;
         else
             isOkToGoInFC = false;
@@ -51,12 +55,25 @@ public class CardSpaceCheck : MonoBehaviour
 
             isOkToGoInFC = false;
             // 카드 효과 저장 함수 발동
+            print("카드 발동!");
             stateCulManager.CardSearchMatch();
             
-            player.ReciveSignCardEffectReady(isOkToGoInFC); // -> false
+            print("턴 넘길 준비!");
+            StopCoroutine(runningCoroutine);
         }
     }
-
+    public void StartACoroutine()
+    {
+        runningCoroutine = StartCoroutine(WaitTenForCardOn());
+    }
+    private IEnumerator WaitTenForCardOn()
+    {
+        print("카드 내기 대기..!");
+        yield return _waitForSecondsRealtime10;
+        isOkToGoInFC = false; // -> 카드 내기 실패!
+        print("카드 강제로 냄!");
+        player.ReciveSignCardEffectReady(isOkToGoInFC);
+    }
     public void CardSpacePrefabsInit(bool isFrist)
     {
         foreach(GameObject obj in cardPrefabs)
@@ -66,6 +83,19 @@ public class CardSpaceCheck : MonoBehaviour
 
             obj.SetActive(false);
         }
+    }
+    public void WaitToPrivateAblieTrunFC(int correspondingTurn)
+    {
+        print("턴 이용 불가 코루틴 실행 ! - !");
+        StartCoroutine(WaitToPrivateAblieTrun(correspondingTurn));
+    }
+    private IEnumerator WaitToPrivateAblieTrun(int correspondingTurn)
+    {  
+        print("턴 진행 불가!!");
+        isOkToGoInFC = false;
+        yield return new WaitUntil(() => GameManager.Instance.totalTrunNum.Value == correspondingTurn);
+        print("턴 진행 가능!! - - - 턴을 정상화 중 . . .!");
+        isOkToGoInFC = true;
     }
     public void MakeCardPublicSame(JobManager.Jobs job, int index ,ulong spaceId)
     {

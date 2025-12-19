@@ -414,5 +414,5 @@ MonoBehaviour:
   heal: 0
   type: 0
   index: 1
-  image: {fileID: 5088316998373936774, guid: cc2645ffcf734a84d9429418742dcbef, type: 3}
+  image: {fileID: -5903395580898912518, guid: 601cc5be108ccd3418161f438ff1b634, type: 3}
   cardExplain: "\uCD5C\uB300\uCCB4\uB825\uC758 10%\uB9CC\uD07C \uACF5\uACA9"

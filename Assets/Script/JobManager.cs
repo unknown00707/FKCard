@@ -10,12 +10,15 @@ using UnityEngine.UI;
 public class JobManager : MonoBehaviour
 {
     public StateCulManager stateCulManager;
+    public CardSpaceCheck cardSpaceCheck;
     CardPlayer player;
 
     [Header("JobStat")]
     public float jobHp;
     public float jobDG;
     public float jobCIRP;
+    public float jobTaknMultiplor;
+    public float jobBenfitMultiplier;
 
     [Header("Explain")]
     public Text jobName;
@@ -165,48 +168,64 @@ public class JobManager : MonoBehaviour
                 jobHp = 500;
                 jobDG = 100;
                 jobCIRP = 1;
+                jobTaknMultiplor = 0.8f;
+                jobBenfitMultiplier = 1f;
                 break; 
             case "근접 딜러":
                 userJobState = Jobs.knight;
                 jobHp = 250;
                 jobDG = 450;
                 jobCIRP = 30;
+                jobTaknMultiplor = 1f;
+                jobBenfitMultiplier = 1f;
                 break; 
             case "광역 딜러":
                 userJobState = Jobs.wizard;
                 jobHp = 250;
                 jobDG = 500;
                 jobCIRP = 1;
+                jobTaknMultiplor = 1f;
+                jobBenfitMultiplier = 1f;
                 break; 
             case "힐러":
                 userJobState = Jobs.healler;
                 jobHp = 350;
                 jobDG = 100;
                 jobCIRP = 1;
+                jobTaknMultiplor = 1f;
+                jobBenfitMultiplier = 1f;
                 break; 
             case "버퍼":
                 userJobState = Jobs.buffer;
                 jobHp = 250;
                 jobDG = 100;
                 jobCIRP = 1;
+                jobTaknMultiplor = 1f;
+                jobBenfitMultiplier = 1f;
                 break; 
             case "전략가":
                 userJobState = Jobs.joker;
                 jobHp = 200;
                 jobDG = 100;
                 jobCIRP = 1;
+                jobTaknMultiplor = 1f;
+                jobBenfitMultiplier = 1f;
                 break; 
             case "빈털털이":
                 userJobState = Jobs.unemployed;
                 jobHp = 100;
                 jobDG = 100;
                 jobCIRP = 1;
+                jobTaknMultiplor = 1.5f;
+                jobBenfitMultiplier = 1f;
                 break; 
             case "죄수":
                 userJobState = Jobs.convict;
                 jobHp = 50;
                 jobDG = 50;
                 jobCIRP = 1;
+                jobTaknMultiplor = 2f;
+                jobBenfitMultiplier = 1f;
                 break;
         }
 
@@ -220,11 +239,12 @@ public class JobManager : MonoBehaviour
     }
     public float[] SendTheJobStat()
     {
-        float[] a = new float[3];
+        float[] a = new float[5];
         a[0] = jobHp;
         a[1] = jobDG;
         a[2] = jobCIRP;
-
+        a[3] = jobTaknMultiplor;
+        a[4] = jobBenfitMultiplier;
         return a;
     }
 
@@ -319,5 +339,6 @@ public class JobManager : MonoBehaviour
         GoToReadyRoom(false);
         seletedObj.SetActive(false);
         stateCulManager.InitCardPlayer();
+        cardSpaceCheck.StartACoroutine();
     }
 }

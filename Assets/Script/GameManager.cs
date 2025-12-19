@@ -14,17 +14,16 @@ public class GameManager : NetworkBehaviour
     public NetworkVariable<int> playerTotalNum = new();
     public NetworkVariable<int> totalTrunNum = new();
     public NetworkVariable<int> currentStageNum = new();
-    public NetworkList<bool> playerCardIsBuffer = new();
     public NetworkList<bool> playerReady = new(); // 직업 선택 준비
     public NetworkList<bool> playerCardSetReady = new(); // 턴 넘길 준비
     public NetworkVariable<bool> isPlayerTrun = new();
-
-    EnemyCulGroup enemyCulGroup;
+    public NetworkVariable<int> stageNum = new(); // 스테이지 큰 수
+    public NetworkVariable<int> sideStageNum = new(); // 스테이지 작은 수
     JobManager jobManager;
     CardSpaceCheck cardSpaceCheck;
     CardEffectAndCulDuringManager durManager;
-    StateCulManager stateCulManager;
     PlayerJobSkill playerJobSkill;
+    StageManager stageManager;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -37,19 +36,13 @@ public class GameManager : NetworkBehaviour
         }
 
         jobManager = FindAnyObjectByType<JobManager>();
-        stateCulManager = FindAnyObjectByType<StateCulManager>();
         cardSpaceCheck = FindAnyObjectByType<CardSpaceCheck>();
         durManager = FindAnyObjectByType<CardEffectAndCulDuringManager>();
-        enemyCulGroup = FindAnyObjectByType<EnemyCulGroup>();
         playerJobSkill = FindAnyObjectByType<PlayerJobSkill>();
+        stageManager = FindAnyObjectByType<StageManager>();
 
         playerJobs = new NetworkList<FixedString64Bytes>(
             new List<FixedString64Bytes>{new("0"), new("1"), new("2")},
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
-        playerCardIsBuffer = new NetworkList<bool>(
-            new List<bool>{false, false, false},
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
@@ -76,16 +69,18 @@ public class GameManager : NetworkBehaviour
             isPlayerTrun.Value = true;
             totalTrunNum.Value = 0;
             currentStageNum.Value = 0;
+            stageNum.Value = 0;
+            sideStageNum.Value = 0;
         }
 
         // 리스너 등록
         playerTotalNum.OnValueChanged += OnPlayerTotalNumChanged;
         isPlayerTrun.OnValueChanged += OnPlayerTrunIsOn;
         playerJobs.OnListChanged += OnPlayerJobsChanged;
-        playerCardIsBuffer.OnListChanged += OnPlayerCardIsBuffer;
         playerReady.OnListChanged += OnPlayerReadyChanged;
         playerCardSetReady.OnListChanged += OnPlayerTrunCulChanged;
-
+        stageNum.OnValueChanged += OnStageNumChanged;
+        sideStageNum.OnValueChanged += OnStageNumChanged;
     }
 
 
@@ -95,9 +90,10 @@ public class GameManager : NetworkBehaviour
         playerTotalNum.OnValueChanged -= OnPlayerTotalNumChanged;
         isPlayerTrun.OnValueChanged -= OnPlayerTrunIsOn;
         playerJobs.OnListChanged -= OnPlayerJobsChanged;
-        playerCardIsBuffer.OnListChanged -= OnPlayerCardIsBuffer;
         playerReady.OnListChanged -= OnPlayerReadyChanged;
         playerCardSetReady.OnListChanged -= OnPlayerTrunCulChanged;
+        stageNum.OnValueChanged -= OnStageNumChanged;
+        sideStageNum.OnValueChanged -= OnStageNumChanged;
     }
 
     
@@ -117,59 +113,19 @@ public class GameManager : NetworkBehaviour
 
     void OnPlayerTrunCulChanged(NetworkListEvent<bool> changeEvent)
     {
-        for(int i = 0; i < playerTotalNum.Value; i ++)
-        {
-            if(playerCardSetReady[i])
-            {
-                isPlayerTrun.Value = true;
-                return;
-            }
-        }
-
-        isPlayerTrun.Value = false; // 턴 넘어갈 타이밍 , 보스/몬스터 턴
+        // 턴 넘김 효과 . . .
     }
-    void OnPlayerCardIsBuffer(NetworkListEvent<bool> changeEvent)
-    {
-        for(int i = 0; i < playerTotalNum.Value; i++)
-        {
-            if(playerCardIsBuffer[i] != false)
-                return;
-        }
 
-        playerJobSkill.ReciveUpUserStateByBufferCard();
-        playerJobSkill.ReciveUpUserDamage();
-    }
 
     void OnPlayerTrunIsOn(bool oldValue, bool newValue)
     {
-        if(!isPlayerTrun.Value)
-        {
-            StartCoroutine(WaitForDamageAndEffect(false)); // 몬스터 턴
-        }
-        else
-            StartCoroutine(WaitForDamageAndEffect(true)); // 플레이어 턴
+        // 턴 변화시 UI 효과
     }
 
-    IEnumerator WaitForDamageAndEffect(bool isPlayerTrun)
+    void OnStageNumChanged(int oldValue, int newValue)
     {
-        if(!isPlayerTrun)
-        {
-            List<float> forMonsterDamage = new() {0,0,0};
-            for(int i = 0; i < playerTotalNum.Value; i++)
-            {
-                //forMonsterDamage[i] = durManager.userAboutDamages[i].damage[totalTrunNum.Value].hitDamage;
-            }
-            enemyCulGroup.RequsetTheDamageToMonster(currentStageNum.Value, forMonsterDamage);
-
-            // 턴에 해당하는 보스에게 데미지 주는 코드 . . .
-        }
-
-        yield return new WaitForSeconds(5f);
-
-        cardSpaceCheck.CardSpacePrefabsInit(isPlayerTrun); // 몬스터 턴
-        totalTrunNum.Value++;
+        stageManager.MakeSameTextStage(stageNum.Value, sideStageNum.Value);
     }
-
     // 직업 선택 
     public void InDicUserJobValue(ulong index, JobManager.Jobs job)
     {
@@ -192,6 +148,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void InGameStartSignClientRpc()
     {
+        print("ClineRpc");
         for(int i = 0; i < playerTotalNum.Value; i++)
         {
             if(!playerReady[i])
@@ -203,17 +160,11 @@ public class GameManager : NetworkBehaviour
 
     
     // 유저의 직업 스텟 정보 동기화용 함수
-    public void InGameUserJobStatSame(float hp, float dg, float crip, ulong userId)
+    public void InGameUserJobStatSame(float hp, float dg, float crip, float damageFromTakenDg, float beneficialEffectMultiplier , ulong userId)
     {
         if(!IsServer) return;
         
-        GameUserJobClientRpc(hp, dg, crip, userId);
-    }
-
-    [ClientRpc]
-    private void GameUserJobClientRpc(float hp, float dg, float crip, ulong userId)
-    {
-        durManager.ReciveUsersStat(hp, dg, crip, userId);
+        durManager.ReciveUsersStat(hp, dg, crip, damageFromTakenDg, beneficialEffectMultiplier, userId);
     }
 
     // 카드 배치 신호 받기 및 카드 생성 함수 호출
@@ -226,67 +177,76 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void RequsetMakeSameCardPublicClientRpc(JobManager.Jobs job, int index ,ulong id)
     {
+        print("ClineRpc");
         cardSpaceCheck.MakeCardPublicSame(job, index, id);
     }
 
     // 카드 배치 완료 및 효과 발동 
     public void InCardEffectReady(bool isReady, ulong id)
     {
+        if(!IsServer) return;
+
         playerCardSetReady[(int)id] = isReady;
+        CheckCardEffectReady();
     }
-    //유저의 카드가 버퍼 관련 카드인지 아닌지 저장
-    public void InSignIsBufferCard(bool isBufferCard, ulong id)
+    private void CheckCardEffectReady()
     {
-        playerCardIsBuffer[(int)id] = isBufferCard;
+        for(int i = 0; i < playerTotalNum.Value; i ++)
+        {
+            if(playerCardSetReady[i])
+            {
+                isPlayerTrun.Value = true;
+                return;
+            }
+        }
+        print("받은 임시 데이터 보내기!");
+        playerJobSkill.ReciveUpUserStateByBufferCard();
+        playerJobSkill.ReciveUpUserDamage();
+        playerJobSkill.RequsetHealDataSend();
+        print("턴의 변화 확인!");
+        isPlayerTrun.Value = !isPlayerTrun.Value; // 턴 넘어갈 타이밍 , 보스/몬스터 턴
+        stageManager.ReciveSignToChangeTrun();
     }
+
     // 유저의 버프 스텟을 임시 저장
-    public void InStorUserUpStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, int damageMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
+    public void InStorUserUpStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
     {
         if(!IsServer) return;
 
-        RequsetUpUserStatTemproyClientRpc(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical , damageMultiplier, sendUserID, cardType, cardIndex);
-        playerCardIsBuffer[(int)sendUserID] = false; // --> 버프 카드 사용 한 걸 채크
+        print("버프 카드 사용 감지!");
+        playerJobSkill.ReciveUpUserStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier, sendUserID, cardType, cardIndex);
     }
-    [ClientRpc]
-    private void RequsetUpUserStatTemproyClientRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, int damageMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
-    {
-        playerJobSkill.ReciveUpUserStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, sendUserID, cardType, cardIndex);
-    }
-    public void InStorUserDamageTemproy(ulong userId, bool isForEnemy, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, ulong sendUserID)
+    public void InStorUserDamageTemproy(ulong userId, bool isForEnemy, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits, ulong sendUserID)
     {
         if(!IsServer) return;
 
-        RequsetUpDamageTemproyClientRpc(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, sendUserID);
-    }
-    [ClientRpc]
-    private void RequsetUpDamageTemproyClientRpc(ulong userId, bool isForEnemy, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, ulong sendUserID)
-    {
-        playerJobSkill.ReciveUpDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, sendUserID);
+        playerJobSkill.ReciveUpDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits, sendUserID);
     }
     // 유저 스텟 상승 효과 정보 저장
-    public void InUserUpStat(float hpIng, float dGing, float criticalIng, int damageMultiplier, ulong id, JobManager.Jobs cardType, int cardIndex)
+    public void InUserUpStat(float hpIng, float dGing, float criticalIng, float damageMultiplier, float beneficialEffectMultiplier,ulong id, JobManager.Jobs cardType, int cardIndex)
     {
         if(!IsServer) return;
+        print("버프 정보 저장 트리거 발동!");
+        durManager.ReciveUpStatUserByBuffer(hpIng, dGing, criticalIng, damageMultiplier, beneficialEffectMultiplier,id, cardType, cardIndex);
+    }
 
-        RequsetUpUserStatClientRpc(hpIng, dGing, criticalIng, damageMultiplier, id,cardType,cardIndex);
-    }
-    [ClientRpc]
-    private void RequsetUpUserStatClientRpc(float hpIng, float dGing, float criticalIng, int damageMultiplier, ulong id, JobManager.Jobs cardType, int cardIndex)
-    {
-        durManager.ReciveUpStatUserByBuffer(hpIng, dGing, criticalIng, damageMultiplier, id, cardType, cardIndex);
-    }
     // 유저가 입힐 / 입을 데미지 저장
-    public void InDamageToUser(ulong enemyID, bool isToEnemy, ulong sendUserID ,float damageFromHp, float damagFromDg, float damageFromTakenDg) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
+    public void InDamageToUser(ulong enemyID, bool isToEnemy, ulong sendUserID ,float damageFromHp, float damagFromDg, float damageFromTakenDg, int numberOfHits) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
     {
         if(!IsServer) return;
 
-        RequsetUpDamageIFOClientRpc(enemyID , isToEnemy, sendUserID, damageFromHp, damagFromDg, damageFromTakenDg);
+        print("데미지 정보 발동!");
+        durManager.ReciveDamageDataFromTemproy(enemyID, isToEnemy, sendUserID, damageFromHp, damagFromDg , damageFromTakenDg, numberOfHits);
     }
-    [ClientRpc]
-    private void RequsetUpDamageIFOClientRpc(ulong enemyID, bool isToEnemy, ulong sendUserID ,float damageFromHp, float damagFromDg, float damageFromTakenDg)
+
+    // 유저가 줄 힐 임시 저장
+    public void InComeHealTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
     {
-        durManager.ReciveDamageDataFromTemproy(enemyID, isToEnemy, sendUserID, damageFromHp, damagFromDg , damageFromTakenDg);
+        if(!IsServer) return;
+
+        playerJobSkill.ReciveUpHealDataTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
     }
+
 
     public override void OnDestroy()
     {

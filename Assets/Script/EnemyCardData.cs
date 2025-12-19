@@ -1,9 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
+[System.Serializable]
+public class EnemyDataOfDamage
+{
+    public float takenDamge;
+    public float takenDamgeMultipler;
 
+}
 public class EnemyCardData : MonoBehaviour
 {
     public StateCulManager stateCulManager;
-
+    public List<EnemyCardData> enemyCardDatasByTrun;
     public string enemyName;
     public float enemyHP = 500;
     public float enemyDamage = 70;
@@ -11,11 +18,7 @@ public class EnemyCardData : MonoBehaviour
     public int enemyID;
     public Sprite img;
     public string ep;
-    void Awake()
-    {
-        
-    }
-
+    
     void Update()
     {
         if(Input.GetMouseButtonDown(1))

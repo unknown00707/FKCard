@@ -1329,7 +1329,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 265907846}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1965944028}
+        m_TargetAssemblyTypeName: ChooseEnemyOrTeam, Assembly-CSharp
+        m_MethodName: EndOfSelect
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &265907846
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1549,11 +1561,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerJobSkill
   ceacdManager: {fileID: 1054227398}
+  chooseEnemyOrTeam: {fileID: 1965944028}
+  cardSpaceCheck: {fileID: 1392324696}
+  enemyCulGroup: {fileID: 1148699780}
   toUserID: 0
   toEnemyID: 0
   upStateGroups: []
   userDamaingChangTemproy: []
+  userHealDataTemproy:
+  - givenUserId: 0
+    startTrunNum: 0
+    endDurTineTrun: 0
+    healAmount: 0
   isSingleAttack: 0
+  job: 0
+  cardIndex: 0
 --- !u!1 &393212971
 GameObject:
   m_ObjectHideFlags: 0
@@ -2263,7 +2285,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 479828326}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1965944028}
+        m_TargetAssemblyTypeName: ChooseEnemyOrTeam, Assembly-CSharp
+        m_MethodName: EndOfSelect
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &479828326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3647,9 +3681,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JobManager
   stateCulManager: {fileID: 2092390122}
+  cardSpaceCheck: {fileID: 1392324696}
   jobHp: 0
   jobDG: 0
   jobCIRP: 0
+  jobTaknMultiplor: 0
+  jobBenfitMultiplier: 0
   jobName: {fileID: 2127301281}
   jobExplain: {fileID: 734774609}
   seletedObj: {fileID: 39196504}
@@ -4103,6 +4140,7 @@ MonoBehaviour:
   userDamaingChangs: []
   userTotalStates: []
   userAboutDamages: []
+  ciriticalMultiplier: 2
 --- !u!1 &1069000737
 GameObject:
   m_ObjectHideFlags: 0
@@ -4597,6 +4635,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCulGroup
   stateCulManager: {fileID: 2092390122}
+  cEACDManager: {fileID: 1054227398}
   enemyPrefabs:
   - {fileID: 2585387887225930279}
   - {fileID: 5311718895622810386}
@@ -5594,6 +5633,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1398855617}
   m_CullTransparentMesh: 1
+--- !u!1 &1432208272
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1432208273}
+  - component: {fileID: 1432208274}
+  m_Layer: 0
+  m_Name: StageManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1432208273
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432208272}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1432208274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432208272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccc4e38dab15543489627e2a09963c62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageManager
+  enemyCulGroup: {fileID: 1148699780}
+  cardSpaceCheck: {fileID: 1392324696}
+  stageTxt: {fileID: 0}
 --- !u!1 &1492146568
 GameObject:
   m_ObjectHideFlags: 0
@@ -7017,6 +7103,9 @@ MonoBehaviour:
   - {fileID: 2062019037}
   - {fileID: 265907845}
   isForPlayer: 0
+  OnReadyToAttack:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2006101738
 GameObject:
   m_ObjectHideFlags: 0
@@ -7174,7 +7263,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2062019038}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1965944028}
+        m_TargetAssemblyTypeName: ChooseEnemyOrTeam, Assembly-CSharp
+        m_MethodName: EndOfSelect
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2062019038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7270,6 +7371,8 @@ MonoBehaviour:
   userHP: 100
   userDamge: 10
   userCRIP: 1
+  userDamageMultipler: 1
+  userBeneficialEffectMultiplier: 0
   userID: 0
   cardName: 
   cardHp: 0
@@ -7846,6 +7949,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCardData
   stateCulManager: {fileID: 2092390122}
+  enemyCardDatasByTrun: []
   enemyName: 
   enemyHP: 0
   enemyDamage: 0
@@ -11107,6 +11211,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCardData
   stateCulManager: {fileID: 2092390122}
+  enemyCardDatasByTrun: []
   enemyName: 
   enemyHP: 500
   enemyDamage: 70
@@ -11203,6 +11308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCardData
   stateCulManager: {fileID: 2092390122}
+  enemyCardDatasByTrun: []
   enemyName: 
   enemyHP: 500
   enemyDamage: 70
@@ -11333,3 +11439,4 @@ SceneRoots:
   - {fileID: 1054227397}
   - {fileID: 393212973}
   - {fileID: 361320982}
+  - {fileID: 1432208273}

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class ChooseEnemyOrTeam : MonoBehaviour
@@ -12,41 +13,50 @@ public class ChooseEnemyOrTeam : MonoBehaviour
     public GameObject chooseObj;
     public Button[] seletedBTN; 
     public bool isForPlayer;
+    public UnityEvent OnReadyToAttack;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        chooseObj.SetActive(false);
+        BasciInit();
+        OnReadyToAttack.AddListener(playerJobSkill.TriggerSkillFromChoosEnemyOrTeam);
+    }
+    void BasciInit()
+    {
         foreach(Button btn in seletedBTN)
         {
             btn.gameObject.SetActive(false);
         }
+        chooseObj.SetActive(false);
     }
 
     public void SetUpOnChooseEnemyOrTeam(bool isToPlayer, bool isMe) // 아군 및 적군 선택 화면 및 선택 기능
     {
+        chooseObj.SetActive(true);
         isForPlayer = isToPlayer;
 
         if(isForPlayer)
         {
             if(isMe || (GameManager.Instance.playerTotalNum.Value == 1))
             {
+                print("유저가 한 명! 강제 실행 작동. . .");
                 playerJobSkill.ReciveTargetUserIDFromChoose(NetworkManager.Singleton.LocalClientId, isForPlayer);
+                BasciInit();
+                OnReadyToAttack.Invoke();
                 return;
             }
             else
             {
                 for(int i = 0; i < GameManager.Instance.playerTotalNum.Value; i++)
                 {
-                    if((ulong)i != NetworkManager.Singleton.LocalClientId)
-                    {
-                        Image icon = seletedBTN[i].image;
-                        string iconString = GameManager.Instance.playerJobs[i].ToString();
-                        jobManager.ChangeImgToIcon(icon, iconString);
-                        seletedBTN[i].gameObject.SetActive(true);
-                    }
-                }    
+                    
+                    Image icon = seletedBTN[i].image;
+                    string iconString = GameManager.Instance.playerJobs[i].ToString();
+                    jobManager.ChangeImgToIcon(icon, iconString);
+                    seletedBTN[i].gameObject.SetActive(true);
+               
+                }  
+                print("아군이 다수! 섹션을 제작. . ."); 
             }
-            
         }
         else
         {
@@ -60,7 +70,10 @@ public class ChooseEnemyOrTeam : MonoBehaviour
             }
             if(activeNum == 1)
             {
+                print("적군이 한 명! 강제 실행 작동. . .");
                 playerJobSkill.ReciveTargetUserIDFromChoose(0, isForPlayer);
+                BasciInit();
+                OnReadyToAttack.Invoke();
                 return;
             }
             for(int i = 0; i < enemyCulGroup.enemyPrefabs.Count(); i++)
@@ -68,14 +81,23 @@ public class ChooseEnemyOrTeam : MonoBehaviour
                 if(enemyCulGroup.enemyPrefabs[i].gameObject.activeInHierarchy)
                 {
                     seletedBTN[i].image.sprite = enemyCulGroup.enemyPrefabs[i].image.sprite;
+                    seletedBTN[i].gameObject.SetActive(true);
+                    print("적군이 다수! 섹션을 제작. . .");
                 }
             }
         }
-        chooseObj.SetActive(true);
     }
 
-    public void EndOfSelect(ulong index) // 선택이 끝났을 때
+    public void EndOfSelect(int index) // 선택이 끝났을 때
     {
-        playerJobSkill.ReciveTargetUserIDFromChoose(index, isForPlayer);
+        print("섹션 트리거 확인!");
+        playerJobSkill.ReciveTargetUserIDFromChoose((ulong)index, isForPlayer);
+        BasciInit();
+        OnReadyToAttack.Invoke();
+    }
+
+    void OnDestroy()
+    {
+        OnReadyToAttack.RemoveListener(playerJobSkill.TriggerSkillFromChoosEnemyOrTeam);
     }
 }
