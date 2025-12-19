@@ -74,8 +74,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
             userTotalStates.Add(new UserStat());
             userAboutDamages.Add(new UserDamgeGroup());
         }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
 
         for(int i = 0; i < userAboutDamages.Count; i++)
         {
@@ -86,10 +85,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                 j++;
             }
         }
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
     }
 
     public void ReciveUsersStat(float hp, float dg, float crip, float damageTakenMultiplier, float beneficialEffectMultiplier ,ulong userID)
