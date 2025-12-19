@@ -75,6 +75,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
             userAboutDamages.Add(new UserDamgeGroup());
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         for(int i = 0; i < userAboutDamages.Count; i++)
         {
@@ -85,6 +86,8 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                 j++;
             }
         }
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     }
