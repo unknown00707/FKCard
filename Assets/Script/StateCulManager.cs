@@ -66,6 +66,7 @@ public class StateCulManager : MonoBehaviour
     public Button[] jokerObjPrefabs;
     public Button[] convictObjPrefabs;
     public Button[] unemployedObjPrefabs;
+    private Dictionary<JobManager.Jobs, Button[]> _jobCardPrefabs;
 
     void Awake()
     {
@@ -75,6 +76,7 @@ public class StateCulManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        InitializeJobCardDictionary();
         StartInit();
     }
     void Update()
@@ -84,7 +86,20 @@ public class StateCulManager : MonoBehaviour
             player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
         }
     }
-
+    void InitializeJobCardDictionary()
+    {
+        _jobCardPrefabs = new Dictionary<JobManager.Jobs, Button[]>
+        {
+            { JobManager.Jobs.defender, defenderObjPrefabs },
+            { JobManager.Jobs.knight, knightObjPrefabs },
+            { JobManager.Jobs.wizard, wizardObjPrefabs },
+            { JobManager.Jobs.healler, healderObjPrefabs },
+            { JobManager.Jobs.buffer, bufferObjPrefabs },
+            { JobManager.Jobs.joker, jokerObjPrefabs },
+            { JobManager.Jobs.convict, convictObjPrefabs }
+            // 'unemployed'는 로직이 특이해서 여기서는 제외합니다.
+        };
+    }
     void StartInit()
     {
         // pool sys
@@ -106,110 +121,61 @@ public class StateCulManager : MonoBehaviour
         userDamge = userStatArray[1];
         userCRIP = userStatArray[2];
 
-        // 초기 카드 활성화
-        switch (jobManager.userJobState)
+        // '백수'는 로직이 완전히 다르므로 별도 처리
+        if (jobManager.userJobState == JobManager.Jobs.unemployed)
         {
-            case JobManager.Jobs.defender:
-                for (int i = 0; i < initalCardN; i++)
+            for (int i = 0; i < 2; i++)
+            {
+                int unemployedIndex = RandomInitCardNum(8);
+                switch(unemployedIndex)
                 {
-                    int defenderIndex = RandomInitCardNum(defenderObjPrefabs.Length);
-                    ReciveValueDataCard(defenderObjPrefabs[defenderIndex].GetComponent<CardData>());
-                    CardInitEmptyToJobs(true, defenderIndex);    
+                    case 0:
+                        int defenderIndex = RandomInitCardNum(defenderObjPrefabs.Length);
+                        ReciveValueDataCard(defenderObjPrefabs[defenderIndex].GetComponent<CardData>());
+                        CardInitEmptyToJobs(true, defenderIndex);  
+                        break; 
+                    case 1:
+                        int knightIndex = RandomInitCardNum(knightObjPrefabs.Length);
+                        ReciveValueDataCard(knightObjPrefabs[knightIndex].GetComponent<CardData>());
+                        CardInitEmptyToJobs(true, knightIndex);  
+                        break; 
+                    case 2:
+                        int wizardIndex = RandomInitCardNum(wizardObjPrefabs.Length);
+                        ReciveValueDataCard(wizardObjPrefabs[wizardIndex].GetComponent<CardData>());
+                        CardInitEmptyToJobs(true, wizardIndex);  
+                        break; 
+                    case 3:
+                        int heallerIndex = RandomInitCardNum(healderObjPrefabs.Length);
+                        ReciveValueDataCard(healderObjPrefabs[heallerIndex].GetComponent<CardData>());
+                        CardInitEmptyToJobs(true, heallerIndex);  
+                        break; 
+                    case 4:
+                        int bufferIndex = RandomInitCardNum(bufferObjPrefabs.Length);
+                        ReciveValueDataCard(bufferObjPrefabs[bufferIndex].GetComponent<CardData>());
+                        CardInitEmptyToJobs(true, bufferIndex); 
+                        break; 
+                    case 5:
+                        int jokerIndex = RandomInitCardNum(jokerObjPrefabs.Length);
+                        ReciveValueDataCard(jokerObjPrefabs[jokerIndex].GetComponent<CardData>());
+                        CardInitEmptyToJobs(true, jokerIndex);  
+                        break; 
+                    case 6:
+                        int convictIndex = RandomInitCardNum(convictObjPrefabs.Length);
+                        ReciveValueDataCard(convictObjPrefabs[convictIndex].GetComponent<CardData>());
+                        CardInitEmptyToJobs(true, convictIndex);  
+                        break; 
                 }
-                break;
-            case JobManager.Jobs.knight:
-                for (int i = 0; i < initalCardN; i++)
-                {
-                    int knightIndex = RandomInitCardNum(knightObjPrefabs.Length);
-                    ReciveValueDataCard(knightObjPrefabs[knightIndex].GetComponent<CardData>());
-                    CardInitEmptyToJobs(true, knightIndex);
-                }
-                break;
-            case JobManager.Jobs.wizard:
-                for (int i = 0; i < initalCardN; i++)
-                {
-                    int wizardIndex = RandomInitCardNum(wizardObjPrefabs.Length);
-                    ReciveValueDataCard(wizardObjPrefabs[wizardIndex].GetComponent<CardData>());
-                    CardInitEmptyToJobs(true, wizardIndex);
-                }
-                break;
-            case JobManager.Jobs.healler:
-                for (int i = 0; i < initalCardN; i++)
-                {
-                    int heallerIndex = RandomInitCardNum(healderObjPrefabs.Length);
-                    ReciveValueDataCard(healderObjPrefabs[heallerIndex].GetComponent<CardData>());
-                    CardInitEmptyToJobs(true, heallerIndex);
-                }
-                break;
-            case JobManager.Jobs.buffer:
-                for (int i = 0; i < initalCardN; i++)
-                {
-                    int bufferIndex = RandomInitCardNum(bufferObjPrefabs.Length);
-                    ReciveValueDataCard(bufferObjPrefabs[bufferIndex].GetComponent<CardData>());
-                    CardInitEmptyToJobs(true, bufferIndex);
-                }
-                break;
-            case JobManager.Jobs.joker:
-                for (int i = 0; i < initalCardN; i++)
-                {
-                    int jokerIndex = RandomInitCardNum(jokerObjPrefabs.Length);
-                    ReciveValueDataCard(jokerObjPrefabs[jokerIndex].GetComponent<CardData>());
-                    CardInitEmptyToJobs(true, jokerIndex);
-                }
-                break;
-            case JobManager.Jobs.convict:
-                for (int i = 0; i < initalCardN; i++)
-                {
-                    int convictIndex = RandomInitCardNum(convictObjPrefabs.Length);
-                    ReciveValueDataCard(convictObjPrefabs[convictIndex].GetComponent<CardData>());
-                    CardInitEmptyToJobs(true, convictIndex);
-                }
-                break;
-            case JobManager.Jobs.unemployed:
-                for (int i = 0; i < 2; i++)
-                {
-                    int unemployedIndex = RandomInitCardNum(8);
-                    switch(unemployedIndex)
-                    {
-                        case 0:
-                            int defenderIndex = RandomInitCardNum(defenderObjPrefabs.Length);
-                            ReciveValueDataCard(defenderObjPrefabs[defenderIndex].GetComponent<CardData>());
-                            CardInitEmptyToJobs(true, defenderIndex);  
-                            break; 
-                        case 1:
-                            int knightIndex = RandomInitCardNum(knightObjPrefabs.Length);
-                            ReciveValueDataCard(knightObjPrefabs[knightIndex].GetComponent<CardData>());
-                            CardInitEmptyToJobs(true, knightIndex);  
-                            break; 
-                        case 2:
-                            int wizardIndex = RandomInitCardNum(wizardObjPrefabs.Length);
-                            ReciveValueDataCard(wizardObjPrefabs[wizardIndex].GetComponent<CardData>());
-                            CardInitEmptyToJobs(true, wizardIndex);  
-                            break; 
-                        case 3:
-                            int heallerIndex = RandomInitCardNum(healderObjPrefabs.Length);
-                            ReciveValueDataCard(healderObjPrefabs[heallerIndex].GetComponent<CardData>());
-                            CardInitEmptyToJobs(true, heallerIndex);  
-                            break; 
-                        case 4:
-                            int bufferIndex = RandomInitCardNum(bufferObjPrefabs.Length);
-                            ReciveValueDataCard(bufferObjPrefabs[bufferIndex].GetComponent<CardData>());
-                            CardInitEmptyToJobs(true, bufferIndex); 
-                            break; 
-                        case 5:
-                            int jokerIndex = RandomInitCardNum(jokerObjPrefabs.Length);
-                            ReciveValueDataCard(jokerObjPrefabs[jokerIndex].GetComponent<CardData>());
-                            CardInitEmptyToJobs(true, jokerIndex);  
-                            break; 
-                        case 6:
-                            int convictIndex = RandomInitCardNum(convictObjPrefabs.Length);
-                            ReciveValueDataCard(convictObjPrefabs[convictIndex].GetComponent<CardData>());
-                            CardInitEmptyToJobs(true, convictIndex);  
-                            break; 
-                    }
-                    
-                }
-                break;
+            }
+        }
+        // '백수'를 제외한 모든 직업은 이 통합 로직을 사용
+        else if (_jobCardPrefabs.TryGetValue(jobManager.userJobState, out Button[] cardPrefabs))
+        {
+            for (int i = 0; i < initalCardN; i++)
+            {
+                int cardIndex = RandomInitCardNum(cardPrefabs.Length);
+                ReciveValueDataCard(cardPrefabs[cardIndex].GetComponent<CardData>());
+                CardInitEmptyToJobs(true, cardIndex);
+            }
         }
 
         player.ReciveGameSetReadySing(userHP, userDamge, userCRIP);

@@ -74,7 +74,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         for(int i = 0; i < userAboutDamages.Count; i++)
         {
             int j = 0;
-            while(j > 50)
+            while(j < 50)
             {
                 userAboutDamages[i].damage.Add(new UserAoubtDamage());
                 j++;
