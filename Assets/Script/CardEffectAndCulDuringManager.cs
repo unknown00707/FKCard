@@ -74,18 +74,6 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
             userTotalStates.Add(new UserStat());
             userAboutDamages.Add(new UserDamgeGroup());
         }
-
-
-        for(int i = 0; i < userAboutDamages.Count; i++)
-        {
-            int j = 0;
-            while(j < 50)
-            {
-                userAboutDamages[i].damage.Add(new UserAoubtDamage());
-                j++;
-            }
-        }
-
     }
 
     public void ReciveUsersStat(float hp, float dg, float crip, float damageTakenMultiplier, float beneficialEffectMultiplier ,ulong userID)
