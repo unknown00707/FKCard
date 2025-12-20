@@ -95,7 +95,7 @@ public class StateCulManager : MonoBehaviour
             { JobManager.Jobs.defender, defenderObjPrefabs },
             { JobManager.Jobs.knight, knightObjPrefabs },
             { JobManager.Jobs.wizard, wizardObjPrefabs },
-            { JobManager.Jobs.healler, healderObjPrefabs },
+            { JobManager.Jobs.healer, healderObjPrefabs },
             { JobManager.Jobs.buffer, bufferObjPrefabs },
             { JobManager.Jobs.joker, jokerObjPrefabs },
             { JobManager.Jobs.convict, convictObjPrefabs }
@@ -235,7 +235,7 @@ public class StateCulManager : MonoBehaviour
             case JobManager.Jobs.wizard:
                 obj.gameObject.name = wizardObjPrefabs[index].gameObject.name;
                 break;
-            case JobManager.Jobs.healler:
+            case JobManager.Jobs.healer:
                 obj.gameObject.name = healderObjPrefabs[index].gameObject.name;
                 break;
             case JobManager.Jobs.buffer:
@@ -263,7 +263,7 @@ public class StateCulManager : MonoBehaviour
             case JobManager.Jobs.wizard:
                 ReciveValueDataCard(wizardObjPrefabs[cardID].GetComponent<CardData>());
                 break;
-            case JobManager.Jobs.healler:
+            case JobManager.Jobs.healer:
                 ReciveValueDataCard(healderObjPrefabs[cardID].GetComponent<CardData>());
                 break;
             case JobManager.Jobs.buffer:
@@ -406,7 +406,7 @@ public class StateCulManager : MonoBehaviour
             case JobManager.Jobs.wizard:
                 playerJobSkill.WizardSkills(cardIndex);
                 break;
-            case JobManager.Jobs.healler:
+            case JobManager.Jobs.healer:
                 playerJobSkill.HeaderSkills(cardIndex);
                 break;
             case JobManager.Jobs.buffer:
