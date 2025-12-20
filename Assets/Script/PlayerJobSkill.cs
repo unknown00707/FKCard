@@ -3,14 +3,50 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
-// --- 탱커(Defender) 카드 효과 ---
-// --- 기사(Knight) 카드 효과 ---
-// --- 마법사(Wizard) 카드 효과 ---
-// --- 힐러(Healer) 카드 효과 ---
-
-// =================================================================================
-// [Main Class] PlayerJobSkill
-// =================================================================================
+[System.Serializable]
+public class UpStateData
+{
+    public ulong targetUserID;
+    public int startTrunNum;
+    public int endTrunNum;
+    public float upHp;
+    public float upDamge;
+    public float upCritical;
+    public float damageTakenMultiplier;
+    public float beneficialEffectMultiplier;
+    public JobManager.Jobs cardType;
+    public int cardIndex;
+}
+[System.Serializable]
+public class UpStateGroup
+{
+    public List<UpStateData> upStateData = new();
+}
+[System.Serializable]
+public class UserHitDamage
+{
+    public ulong targetMonsterID;
+    public bool isTargetEnemy;
+    public int startTrunNum;
+    public int endTrunNum;
+    public float hitHp;
+    public float hitDamge;
+    public float hitTakenDg;
+    public int numberOfHits;
+}
+[System.Serializable]
+public class UserDamaing
+{
+    public List<UserHitDamage> userHitDamages = new();
+}
+[System.Serializable]
+public class UserHealData
+{
+    public ulong givenUserId;
+    public int startTrunNum;
+    public int endDurTineTrun;
+    public float healAmount;
+}
 
 public class PlayerJobSkill : MonoBehaviour
 {
