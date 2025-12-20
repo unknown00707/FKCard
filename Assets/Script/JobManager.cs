@@ -224,7 +224,7 @@ public class JobManager : MonoBehaviour
             jobBenefitMultiplier = stats.benefitMultiplier;
         }
         
-        player?.ReciveJobs(userJobState);
+        player.ReciveJobs(userJobState);
     }
 
     public void GoToReadyRoom(bool isGotoRoom)
@@ -237,7 +237,14 @@ public class JobManager : MonoBehaviour
     }
     public float[] SendTheJobStat()
     {
-        return [jobHp, jobDG, jobCrit, jobTakenMultiplier, jobBenefitMultiplier];
+        float[] sendFlaotArray  =  new float[5];
+        sendFlaotArray[0] = jobHp;
+        sendFlaotArray[1] = jobDG;
+        sendFlaotArray[2] = jobCrit;
+        sendFlaotArray[3] = jobTakenMultiplier;
+        sendFlaotArray[4] = jobBenefitMultiplier;
+
+        return sendFlaotArray;
     }
 
 

@@ -100,7 +100,7 @@ public class GameManager : NetworkBehaviour
     
     void OnPlayerTotalNumChanged(int oldValue, int newValue)
     {
-        Debug.Log("플레이어 수 조정  {oldValue} -> {newValue} . . . 난이도 조정 중. . .");
+        UnityEngine.Debug.Log("플레이어 수 조정  {oldValue} -> {newValue} . . . 난이도 조정 중. . .");
     }
     void OnPlayerJobsChanged(NetworkListEvent<FixedString64Bytes> changeEvent)
     {
@@ -148,7 +148,7 @@ public class GameManager : NetworkBehaviour
         {
             if(!playerReady[i])
             {
-                Debug.logwarning("아직 준비 안된 플레이어가 있습니다!");
+                UnityEngine.Debug.LogWarning("아직 준비 안된 플레이어가 있습니다!");
                 return;
             }
         }

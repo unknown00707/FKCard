@@ -36,7 +36,7 @@ public class UserHitDamage
 }
 [System.Serializable]
 public class UserDamaing
-{
+{    
     public List<UserHitDamage> userHitDamages = new();
 }
 [System.Serializable]
@@ -109,13 +109,13 @@ public class PlayerJobSkill : MonoBehaviour
             { (JobManager.Jobs.wizard, 4), new WizardCard4Effect() },
 
             // --- 힐러 ---
-            { (JobManager.Jobs.healler, 0), new HealerCard0Effect() },
-            { (JobManager.Jobs.healler, 1), new HealerCard1Effect() },
+            { (JobManager.Jobs.healer, 0), new HealerCard0Effect() },
+            { (JobManager.Jobs.healer, 1), new HealerCard1Effect() },
             // 2번, 5번은 미구현 상태라 제외
-            { (JobManager.Jobs.healler, 3), new HealerCard3Effect() },
-            { (JobManager.Jobs.healler, 4), new HealerCard4Effect() },
-            { (JobManager.Jobs.healler, 6), new HealerCard6Effect() },
-            { (JobManager.Jobs.healler, 7), new HealerCard7Effect() },
+            { (JobManager.Jobs.healer, 3), new HealerCard3Effect() },
+            { (JobManager.Jobs.healer, 4), new HealerCard4Effect() },
+            { (JobManager.Jobs.healer, 6), new HealerCard6Effect() },
+            { (JobManager.Jobs.healer, 7), new HealerCard7Effect() },
         };
     }
 
@@ -399,42 +399,42 @@ public class PlayerJobSkill : MonoBehaviour
         switch(index)
         {
             case 0:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 0;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, false);
                 break;
             case 1:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 1;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
                 break;
             case 2:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 2;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
                 break;
             case 3:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 3;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
                 break;
             case 4:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 4;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
                 break;
             case 5:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 5;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
                 break;
             case 6:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 6;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
                 break;
             case 7:
-                job = JobManager.Jobs.healler;
+                job = JobManager.Jobs.healer;
                 cardIndex = 7;
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, false);
                 break;

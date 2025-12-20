@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class HealerCard0Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
