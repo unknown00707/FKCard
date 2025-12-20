@@ -2,50 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
-[System.Serializable]
-public class UpStateData
-{
-    public ulong targetUserID;
-    public int startTrunNum;
-    public int endTrunNum;
-    public float upHp;
-    public float upDamge;
-    public float upCritical;
-    public float damageTakenMultiplier;
-    public float beneficialEffectMultiplier;
-    public JobManager.Jobs cardType;
-    public int cardIndex;
-}
-[System.Serializable]
-public class UpStateGroup
-{
-    public List<UpStateData> upStateData = new();
-}
-[System.Serializable]
-public class UserHitDamage
-{
-    public ulong targetMonsterID;
-    public bool isTargetEnemy;
-    public int startTrunNum;
-    public int endTrunNum;
-    public float hitHp;
-    public float hitDamge;
-    public float hitTakenDg;
-    public int numberOfHits;
-}
-[System.Serializable]
-public class UserDamaing
-{
-    public List<UserHitDamage> userHitDamages = new();
-}
-[System.Serializable]
-public class UserHealData
-{
-    public ulong givenUserId;
-    public int startTrunNum;
-    public int endDurTineTrun;
-    public float healAmount;
-}
+
+// --- 탱커(Defender) 카드 효과 ---
+// --- 기사(Knight) 카드 효과 ---
+// --- 마법사(Wizard) 카드 효과 ---
+// --- 힐러(Healer) 카드 효과 ---
+
+// =================================================================================
+// [Main Class] PlayerJobSkill
+// =================================================================================
+
 public class PlayerJobSkill : MonoBehaviour
 {
     [Header("Manager")]
@@ -59,12 +25,14 @@ public class PlayerJobSkill : MonoBehaviour
     public List<UpStateGroup> upStateGroups = new();
     public List<UserDamaing> userDamaingChangTemproy = new();
     public List<UserHealData> userHealDataTemproy = new();
-    public bool isSingleAttack; // 단일공격임?
+    public bool isSingleAttack; 
     public JobManager.Jobs job;
     public int cardIndex;
     
-    CardPlayer player;
-
+    private CardPlayer player;
+    
+    // 💡 핵심: 카드 효과를 저장할 Dictionary (전략 패턴 저장소)
+    private Dictionary<(JobManager.Jobs, int), ICardEffect> cardEffects;
 
     void Awake()
     {
@@ -73,7 +41,48 @@ public class PlayerJobSkill : MonoBehaviour
             upStateGroups.Add(new UpStateGroup());
             userDamaingChangTemproy.Add(new UserDamaing());
         }
+
+        // 💡 초기화: 모든 카드 효과를 Dictionary에 등록
+        InitializeCardEffects();
     }
+    private void InitializeCardEffects()
+    {
+        cardEffects = new Dictionary<(JobManager.Jobs, int), ICardEffect>
+        {
+            // --- 방어자 ---
+            { (JobManager.Jobs.defender, 0), new DefenderCard0Effect() },
+            { (JobManager.Jobs.defender, 1), new DefenderCard1Effect() },
+            { (JobManager.Jobs.defender, 2), new DefenderCard2Effect() },
+            { (JobManager.Jobs.defender, 3), new DefenderCard3Effect() },
+            { (JobManager.Jobs.defender, 4), new DefenderCard4Effect() },
+            { (JobManager.Jobs.defender, 5), new DefenderCard5Effect() },
+            
+            // --- 기사 ---
+            { (JobManager.Jobs.knight, 0), new KnightCard0Effect() },
+            { (JobManager.Jobs.knight, 1), new KnightCard1Effect() },
+            { (JobManager.Jobs.knight, 2), new KnightCard2Effect() },
+            { (JobManager.Jobs.knight, 3), new KnightCard3Effect() },
+            { (JobManager.Jobs.knight, 4), new KnightCard4Effect() },
+            { (JobManager.Jobs.knight, 5), new KnightCard5Effect() },
+
+            // --- 마법사 ---
+            { (JobManager.Jobs.wizard, 0), new WizardCard0Effect() },
+            { (JobManager.Jobs.wizard, 1), new WizardCard1Effect() },
+            { (JobManager.Jobs.wizard, 2), new WizardCard2Effect() },
+            { (JobManager.Jobs.wizard, 3), new WizardCard3Effect() },
+            { (JobManager.Jobs.wizard, 4), new WizardCard4Effect() },
+
+            // --- 힐러 ---
+            { (JobManager.Jobs.healler, 0), new HealerCard0Effect() },
+            { (JobManager.Jobs.healler, 1), new HealerCard1Effect() },
+            // 2번, 5번은 미구현 상태라 제외
+            { (JobManager.Jobs.healler, 3), new HealerCard3Effect() },
+            { (JobManager.Jobs.healler, 4), new HealerCard4Effect() },
+            { (JobManager.Jobs.healler, 6), new HealerCard6Effect() },
+            { (JobManager.Jobs.healler, 7), new HealerCard7Effect() },
+        };
+    }
+
     void Update()
     {
         if (player == null && NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
@@ -81,22 +90,20 @@ public class PlayerJobSkill : MonoBehaviour
             player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
         }
     }
+    
     public void ReciveTargetUserIDFromChoose(ulong index, bool isToPlayer)
     {
-        if(isToPlayer)
-            toUserID = index;
-        else
-            toEnemyID = index;
-
+        if(isToPlayer) toUserID = index;
+        else toEnemyID = index;
     }
-    //버프 임시 저장 보내기
-    private void UpStateForIDUser(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
+    
+    public void UpStateForIDUser(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
         print("버프 임시 저장 보내기!");
         player.UpUserStatTemporary(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier, cardType , cardIndex);
     }
-    // 데미지 임시 저장 보내기
-    private void GiveDamageForIDUser(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
+    
+    public void GiveDamageForIDUser(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
     {
         print("데미지 임시 저장 보내기!");
         player.UpUserDamageTemporary(userId, isForEnemy ,startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits);
@@ -112,6 +119,7 @@ public class PlayerJobSkill : MonoBehaviour
         });
         print("버프 임시 저장!");
     }
+
     //데미지 저장
     public void ReciveUpDamageTemproy(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits, ulong sendUserID)
     {
@@ -129,6 +137,7 @@ public class PlayerJobSkill : MonoBehaviour
         
         print("데미지 임시 저장!");
     }
+
     // 버프 데이터 보내기
     public void ReciveUpUserStateByBufferCard()
     {
@@ -189,7 +198,6 @@ public class PlayerJobSkill : MonoBehaviour
             }
         }
     }
-    // 힐량 임시 보내기
     public void GiveHealToTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
     {
         player.ToHealTemporary(userId, startDurTimeTrun, endDurTineTrun, healAmount);
@@ -205,6 +213,7 @@ public class PlayerJobSkill : MonoBehaviour
             healAmount = healAmount
         });
     }
+
     // 힐량 보내기
     public void RequsetHealDataSend()
     {
@@ -217,145 +226,28 @@ public class PlayerJobSkill : MonoBehaviour
             }    
         }
     }
-    // 모든 스킬의 트리거 함수
+    // 💡 핵심 변경: 복잡한 switch-case가 사라지고 단 3줄로 끝남!
     public void TriggerSkillFromChoosEnemyOrTeam()
     {
         print("플레이어 스킬 스크립트 - 이벤트 트리거 작동!");
-        int currentTrun = GameManager.Instance.totalTrunNum.Value;
-        switch(job)
+        int currentTurn = GameManager.Instance.totalTrunNum.Value;
+
+        // Dictionary에서 해당 직업/카드의 효과를 찾아서 실행
+        if (cardEffects.TryGetValue((job, cardIndex), out ICardEffect effect))
         {
-            case JobManager.Jobs.defender:
-                switch(cardIndex)
-                {
-                    case 0:
-                        UpStateForIDUser(toUserID, currentTrun, currentTrun + 1, (float)15/100, 0, 0, 0, 0 , job, cardIndex);
-                        break;
-                    case 1:
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun, currentTrun + 1, (float)10/100, 0, 0, 1);
-                        break;
-                    case 2:
-                        UpStateForIDUser(toUserID, currentTrun, -1, (float)5/100, 0, 0, 0, 0 ,job, cardIndex); // -1 mean infinite
-                        break;
-                    case 3:
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun + 1, currentTrun + 2, 0, 0, (float)50/100, 1);
-                        break;
-                    case 4:
-                        UpStateForIDUser(toUserID, currentTrun + 1 , currentTrun + 2, (float)50/100, 0, 0, 0, 0 ,job, cardIndex);
-                        break;
-                    case 5:
-                        UpStateForIDUser(toUserID, currentTrun , currentTrun + 3, 0, 0, 0, 0.2f, 0 ,job,cardIndex);
-                        break;
-                }
-                break;
-            case JobManager.Jobs.knight:
-                switch(cardIndex)
-                {
-                    case 0:
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun, currentTrun + 1, 0, (float)50/100, 0, 2);
-                        break;
-                    case 1:
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun, currentTrun + 1, 0, (float)120/100, 0, 1);
-                        break;
-                    case 2:
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun, -1, 0, (float)20/100, 0, 1);
-                        break;
-                    case 3:
-                        cardSpaceCheck.WaitToPrivateAblieTrunFC(currentTrun + 4); // ex : 3턴간 행동 불가 = +4
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun + 3, currentTrun + 4, 0, (float)100/100, 0, 3);
-                        break;
-                    case 4:
-                        cardSpaceCheck.WaitToPrivateAblieTrunFC(currentTrun + 2); // ex : 1턴간 행동 불가 = +2
-                        UpStateForIDUser(toUserID, currentTrun + 1, currentTrun + 2, 0, 0, 40f, 0, 0 ,job, cardIndex);
-                        break;
-                    case 5:
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun, currentTrun +1, 0, 0, (float)30/100, 1);
-                        break;
-                }
-                break;
-            case JobManager.Jobs.wizard:
-                switch(cardIndex)
-                {
-                    case 0:
-                        for(int i = 0; i < enemyCulGroup.enemyPrefabs.Count(); i++)
-                        {
-                            if(enemyCulGroup.enemyPrefabs[i].gameObject.activeInHierarchy)
-                                GiveDamageForIDUser((ulong)i, true, currentTrun, currentTrun + 1, 0, (float)70/100, 0, 1);
-                        }
-                        break;
-                    case 1:
-                        UpStateForIDUser(toUserID, currentTrun, currentTrun + 4, 0, (float)30/100, 0, 0, 0 ,job, cardIndex);
-                        break;
-                    case 2:
-                        GiveDamageForIDUser(toEnemyID, true, currentTrun, currentTrun + 6, 0, (float)30/100, 0, 1);
-                        break;
-                    case 3:
-                        GiveDamageForIDUser(toUserID, false, currentTrun, currentTrun + 1, (float)50/100, 0, 0, 1);
-                        for(int i = 0; i < enemyCulGroup.enemyPrefabs.Count(); i++)
-                        {
-                            if(enemyCulGroup.enemyPrefabs[i].gameObject.activeInHierarchy)
-                                GiveDamageForIDUser((ulong)i, true, currentTrun, currentTrun + 1, 0, (float)150/100, 0, 1);
-                        }
-                        break;
-                    case 4:
-                        for(int i = 0; i < enemyCulGroup.enemyPrefabs.Count(); i++)
-                        {
-                            if(enemyCulGroup.enemyPrefabs[i].gameObject.activeInHierarchy)
-                                GiveDamageForIDUser((ulong)i, true, currentTrun, currentTrun + 1, 0, (float)300/100, 0, 1);
-                        }
-                        for(int i = 0; i < GameManager.Instance.totalTrunNum.Value; i++)
-                        {
-                            print("팀 공격!");
-                            GiveDamageForIDUser((ulong)i, false, currentTrun, currentTrun + 1, (float)30/100, 0, 0, 1);
-                        }
-                        break;
-                }
-                break;
-            case JobManager.Jobs.healler:
-                switch(cardIndex)
-                {
-                    case 0:
-                        GiveHealToTemproy(toUserID, currentTrun, currentTrun + 1, (float)15/100);
-                        break;
-                    case 1:
-                        for(int i = 0; i < GameManager.Instance.totalTrunNum.Value; i++)
-                        {
-                            GiveHealToTemproy((ulong)i, currentTrun, currentTrun + 1, (float)7.5/100);
-                        }
-                        break;
-                    case 2:
-                        // 자신이 받을 데미지를 아군 한명에게 75%위력으로 대타세우기
-                        break;
-                    case 3:
-                        for(int i = 0; i < GameManager.Instance.totalTrunNum.Value; i++)
-                        {
-                            GiveHealToTemproy((ulong)i, currentTrun, currentTrun + 1, (float)Random.Range(3f,16f)/100);
-                        }
-                        break;
-                    case 4:
-                        for(int i = 0; i < GameManager.Instance.totalTrunNum.Value; i++)
-                        {
-                            UpStateForIDUser((ulong)i, currentTrun, currentTrun +1 , (float)5/100 , 0 , 0 , 0 , 0 ,job ,cardIndex);
-                        }
-                        break;
-                    case 5:
-                        // 아군 한명 30%체력으로 부활
-                        break;
-                    case 6:
-                        GiveHealToTemproy(toUserID, currentTrun, -1, (float)5/100);
-                        break;
-                    case 7:
-                        UpStateForIDUser(toUserID, currentTrun, currentTrun + 4 , 0 , 0 , 0 , 0 , 0.5f ,job ,cardIndex);
-                        break;
-                }
-                break;
+            effect.ApplyEffect(this, currentTurn);
+        }
+        else
+        {
+            Debug.LogWarning($"아직 구현되지 않은 카드 효과입니다: {job}, Index: {cardIndex}");
         }
 
         // 직업 카드 스킬 저장 후 카드 발동 준비 됨
-        player.ReciveSignCardEffectReady(false); // -> 배치 완료해서 배치 할 곳 없음의 이미 --> 턴 넘길 준비
+        player.ReciveSignCardEffectReady(false);
     }
     public void DefenderSkills(int index)
     {
-        int currentTrun = GameManager.Instance.totalTrunNum.Value;
+         int currentTrun = GameManager.Instance.totalTrunNum.Value;
         switch(index)
         {
             case 0:
@@ -392,7 +284,7 @@ public class PlayerJobSkill : MonoBehaviour
                 {
                     if((ulong)i != NetworkManager.Singleton.LocalClientId)
                     {
-                        UpStateForIDUser((ulong)i, currentTrun , currentTrun + 3, 0, (float)15/100, 0, 1.2f, 0, job, cardIndex);
+                        UpStateForIDUser((ulong)i, currentTrun , currentTrun + 3, 0, 0.15f, 0, 1.2f, 0, job, cardIndex);
                     }
                 }
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
@@ -512,8 +404,4 @@ public class PlayerJobSkill : MonoBehaviour
                 break;
         }
     }
-
-
-
 }
-

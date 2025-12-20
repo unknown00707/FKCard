@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -143,18 +144,20 @@ public class GameManager : NetworkBehaviour
     {
         if(!IsServer) return;
         
+        for(int i = 0; i < playerTotalNum.Value; i++)
+        {
+            if(!playerReady[i])
+            {
+                Debug.logwarning("아직 준비 안된 플레이어가 있습니다!");
+                return;
+            }
+        }
         InGameStartSignClientRpc();
     }
     [ClientRpc]
     private void InGameStartSignClientRpc()
     {
-        print("ClineRpc");
-        for(int i = 0; i < playerTotalNum.Value; i++)
-        {
-            if(!playerReady[i])
-                return;
-        }
-
+        print("ClineRpc: 모든 클라이언트 게임 시작!");
         jobManager.RequestGameStartSign();
     }
 
@@ -206,6 +209,7 @@ public class GameManager : NetworkBehaviour
         print("턴의 변화 확인!");
         isPlayerTrun.Value = !isPlayerTrun.Value; // 턴 넘어갈 타이밍 , 보스/몬스터 턴
         stageManager.ReciveSignToChangeTrun();
+        totalTrunNum.Value++;
     }
 
     // 유저의 버프 스텟을 임시 저장

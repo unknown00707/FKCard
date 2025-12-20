@@ -7,6 +7,16 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
+// 직업 스탯을 보관하기 위한 데이터 클래스
+public class JobStatData
+{
+    public float hp; // 체력
+    public float dg; // 공격력
+    public float crit; // 치명타 확률
+    public float takenDamageMultiplier; // 받는 피해 배율
+    public float benefitMultiplier; // 이로운 효과 배율
+}
+
 public class JobManager : MonoBehaviour
 {
     public StateCulManager stateCulManager;
@@ -16,9 +26,9 @@ public class JobManager : MonoBehaviour
     [Header("JobStat")]
     public float jobHp;
     public float jobDG;
-    public float jobCIRP;
-    public float jobTaknMultiplor;
-    public float jobBenfitMultiplier;
+    public float jobCrit;
+    public float jobTakenMultiplier;
+    public float jobBenefitMultiplier;
 
     [Header("Explain")]
     public Text jobName;
@@ -37,7 +47,7 @@ public class JobManager : MonoBehaviour
         knight, // 근접 딜러
         wizard, // 광역 딜러
         buffer, // 버퍼
-        healler, // 힐러 
+        healer, // 힐러 
         joker, // 전략가
         unemployed, // 백수, 빈털털이  : 카드가 6장
         convict // 죄수 : 트롤 1장  - 성능 카드 2장 
@@ -46,7 +56,8 @@ public class JobManager : MonoBehaviour
     public Jobs userJobState; // 결정한 직업
     private string unJobState; // 임시 직업 , 선택한 직업
 
-    Dictionary<string , string> jobPassive = new()
+    // 직업별 패시브 설명
+    private Dictionary<string , string> jobPassive = new()
     {
         { "탱커", "단일공격을 모두 자신이 받음 / 모든 피해를 일부분 차감시켜 받음 / 체력 높음"},
         { "근접 딜러", "치명타 확률 증가 / 일정확률로 피해없음 / 공격력 높음"},
@@ -57,6 +68,8 @@ public class JobManager : MonoBehaviour
         { "빈털털이", "카드획득 배율이 1.5배 (4개=6개)로 적용 / 전투중에 아군에게 카드양도 가능인데 카드 0개되면 바로 사망"},
         { "죄수", "카드획득 배율이 0.5배 (4개=2개)로 적용 / 자기가 뽑은 카드의 수치가 1.5배 / 공격력 높음"},
     };
+    
+    // UI 표시용 이름 매핑
     public Dictionary<int, string> arryValueList = new()
     {
         {0, "탱커"},
@@ -68,8 +81,15 @@ public class JobManager : MonoBehaviour
         {6, "빈털털이"},
         {7, "죄수"},
     };
+    
     public Sprite[] jobIcons;
 
+    // 직업별 스탯 데이터를 보관하는 Dictionary
+    private Dictionary<Jobs, JobStatData> jobStats;
+
+    /*
+    몹 수식어 (후반가면 2개이상도 적용되는 식으로)
+    ... (디자인 노트 주석 생략) ...
     //탱커 : 자기카드 쓰면 최대체력의 3%씩 1턴 추가체력
     //근딜 : 자기카드 쓰면 치명타 확률 10% 추가적용
     //광딜 : 자기카드 쓰면 공격력 +10%
@@ -106,13 +126,28 @@ public class JobManager : MonoBehaviour
 2턴마다 모든 플레이어의 카드를 1장 삭제
 직업카드가 모두 소진된 플레이어를 즉시 사망처리
 보스가 받는 모든피해의 20%를 1명에게 반사
-
-
     */
+    
+    private bool initialJobSent = false;
+
     void Awake()
     {
         unJobState = "탱커";
+        
+        // 직업 스탯 데이터를 한 곳에서 초기화
+        jobStats = new Dictionary<Jobs, JobStatData>
+        {
+            { Jobs.defender,   new JobStatData { hp = 500, dg = 100, crit = 1,  takenDamageMultiplier = 0.8f, benefitMultiplier = 1f } },
+            { Jobs.knight,     new JobStatData { hp = 250, dg = 450, crit = 30, takenDamageMultiplier = 1f,   benefitMultiplier = 1f } },
+            { Jobs.wizard,     new JobStatData { hp = 250, dg = 500, crit = 1,  takenDamageMultiplier = 1f,   benefitMultiplier = 1f } },
+            { Jobs.healer,     new JobStatData { hp = 350, dg = 100, crit = 1,  takenDamageMultiplier = 1f,   benefitMultiplier = 1f } },
+            { Jobs.buffer,     new JobStatData { hp = 250, dg = 100, crit = 1,  takenDamageMultiplier = 1f,   benefitMultiplier = 1f } },
+            { Jobs.joker,      new JobStatData { hp = 200, dg = 100, crit = 1,  takenDamageMultiplier = 1f,   benefitMultiplier = 1f } },
+            { Jobs.unemployed, new JobStatData { hp = 100, dg = 100, crit = 1,  takenDamageMultiplier = 1.5f, benefitMultiplier = 1f } },
+            { Jobs.convict,    new JobStatData { hp = 50,  dg = 50,  crit = 1,  takenDamageMultiplier = 2f,   benefitMultiplier = 1f } }
+        };
     }
+    
     void Start()
     {
         jobName.text = arryValueList[0];
@@ -128,7 +163,12 @@ public class JobManager : MonoBehaviour
         if (player == null && NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
         {
             player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+        }
+
+        if(player != null && !initialJobSent)
+        {
             SelectUserJob();
+            initialJobSent = true;
         }
     }
 
@@ -136,7 +176,6 @@ public class JobManager : MonoBehaviour
     {
         if (NetworkManager.Singleton != null)
         {
-            // 현재 인스턴스가 Host(서버 + 클라이언트) 또는 Server 전용인지 확인
             if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer)
             {
                 gameStartBTN.SetActive(true);
@@ -159,93 +198,46 @@ public class JobManager : MonoBehaviour
         jobExplain.text = jobPassive[str];
         unJobState = str;
     }
+
     public void SelectUserJob()
     {
+        // 문자열로 된 임시 직업 상태를 Enum 타입으로 변환
         switch(unJobState)
         {
-            case "탱커":
-                userJobState = Jobs.defender;
-                jobHp = 500;
-                jobDG = 100;
-                jobCIRP = 1;
-                jobTaknMultiplor = 0.8f;
-                jobBenfitMultiplier = 1f;
-                break; 
-            case "근접 딜러":
-                userJobState = Jobs.knight;
-                jobHp = 250;
-                jobDG = 450;
-                jobCIRP = 30;
-                jobTaknMultiplor = 1f;
-                jobBenfitMultiplier = 1f;
-                break; 
-            case "광역 딜러":
-                userJobState = Jobs.wizard;
-                jobHp = 250;
-                jobDG = 500;
-                jobCIRP = 1;
-                jobTaknMultiplor = 1f;
-                jobBenfitMultiplier = 1f;
-                break; 
-            case "힐러":
-                userJobState = Jobs.healler;
-                jobHp = 350;
-                jobDG = 100;
-                jobCIRP = 1;
-                jobTaknMultiplor = 1f;
-                jobBenfitMultiplier = 1f;
-                break; 
-            case "버퍼":
-                userJobState = Jobs.buffer;
-                jobHp = 250;
-                jobDG = 100;
-                jobCIRP = 1;
-                jobTaknMultiplor = 1f;
-                jobBenfitMultiplier = 1f;
-                break; 
-            case "전략가":
-                userJobState = Jobs.joker;
-                jobHp = 200;
-                jobDG = 100;
-                jobCIRP = 1;
-                jobTaknMultiplor = 1f;
-                jobBenfitMultiplier = 1f;
-                break; 
-            case "빈털털이":
-                userJobState = Jobs.unemployed;
-                jobHp = 100;
-                jobDG = 100;
-                jobCIRP = 1;
-                jobTaknMultiplor = 1.5f;
-                jobBenfitMultiplier = 1f;
-                break; 
-            case "죄수":
-                userJobState = Jobs.convict;
-                jobHp = 50;
-                jobDG = 50;
-                jobCIRP = 1;
-                jobTaknMultiplor = 2f;
-                jobBenfitMultiplier = 1f;
-                break;
+            case "탱커": userJobState = Jobs.defender; break; 
+            case "근접 딜러": userJobState = Jobs.knight; break; 
+            case "광역 딜러": userJobState = Jobs.wizard; break; 
+            case "힐러": userJobState = Jobs.healer; break; 
+            case "버퍼": userJobState = Jobs.buffer; break; 
+            case "전략가": userJobState = Jobs.joker; break; 
+            case "빈털털이": userJobState = Jobs.unemployed; break; 
+            case "죄수": userJobState = Jobs.convict; break;
         }
 
-        player.ReciveJobs(userJobState);
+        // Dictionary에서 해당 직업의 스탯 데이터를 찾아 적용
+        if (jobStats.TryGetValue(userJobState, out JobStatData stats))
+        {
+            jobHp = stats.hp;
+            jobDG = stats.dg;
+            jobCrit = stats.crit;
+            jobTakenMultiplier = stats.takenDamageMultiplier;
+            jobBenefitMultiplier = stats.benefitMultiplier;
+        }
+        
+        player?.ReciveJobs(userJobState);
     }
 
     public void GoToReadyRoom(bool isGotoRoom)
     {
+        if (isGotoRoom)
+            SelectUserJob();
+
         jobsObj.SetActive(!isGotoRoom);
         readyRoomObj.SetActive(isGotoRoom);
     }
     public float[] SendTheJobStat()
     {
-        float[] a = new float[5];
-        a[0] = jobHp;
-        a[1] = jobDG;
-        a[2] = jobCIRP;
-        a[3] = jobTaknMultiplor;
-        a[4] = jobBenfitMultiplier;
-        return a;
+        return [jobHp, jobDG, jobCrit, jobTakenMultiplier, jobBenefitMultiplier];
     }
 
 
@@ -293,7 +285,7 @@ public class JobManager : MonoBehaviour
             case "wizard":
                 icon.sprite = jobIcons[2];
                 break; 
-            case "healler":
+            case "healer":
                 icon.sprite = jobIcons[3];
                 break; 
             case "buffer":

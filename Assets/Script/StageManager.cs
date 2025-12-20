@@ -43,7 +43,6 @@ public class StageManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(5f);
 
         cardSpaceCheck.CardSpacePrefabsInit(isPlayerTrun); // 몬스터 턴
-        GameManager.Instance.totalTrunNum.Value++;
-        print("턴 증가!");
+        print("턴 효과 적용 완료!");
     }
 }
