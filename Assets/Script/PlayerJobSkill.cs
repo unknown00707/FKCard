@@ -184,24 +184,35 @@ public class PlayerJobSkill : NetworkBehaviour
         {
             List<UpStateData> upStateDatas = new();
             List<float> propertyNum = new();
-            for (int j = 0; j < upStateGroups.Count; j++)
-            {
-                foreach(UpStateData upState in upStateGroups[j].upStateData)
-                {
-                    if((int)upState.targetUserID == i)
-                    {
-                        if(upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value)
-                        {
-                            if((upState.endTrunNum == -1) || (GameManager.Instance.totalTrunNum.Value <= upState.endTrunNum))
-                            {// -1 mean infinit
-                                print("Success Accoes Income Buffe . . .");
-                                propertyNum.Add((upState.upHp + upState.upDamge + upState.upCritical + upState.damageTakenMultiplier) / 100);
-                                upStateDatas.Add(upState);     
-                            }
+            // for (int j = 0; j < upStateGroups.Count; j++)
+            // {
+            //     foreach(UpStateData upState in upStateGroups[j].upStateData)
+            //     {
+            //         if((int)upState.targetUserID == i)
+            //         {
+            //             if(upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value)
+            //             {
+            //                 if((upState.endTrunNum == -1) || (GameManager.Instance.totalTrunNum.Value <= upState.endTrunNum))
+            //                 {// -1 mean infinit
+            //                     print("Success Accoes Income Buffe . . .");
+            //                     propertyNum.Add((upState.upHp + upState.upDamge + upState.upCritical + upState.damageTakenMultiplier) / 100);
+            //                     upStateDatas.Add(upState);     
+            //                 }
                                
-                        }
-                    }
-                }
+            //             }
+            //         }
+            //     }
+            // }
+            var validBuffs = upStateGroups.SelectMany(group => group.upStateData)
+                .Where(upState => (int)upState.targetUserID == i &&
+                                  upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value &&
+                                  (upState.endTrunNum == -1 || GameManager.Instance.totalTrunNum.Value <= upState.endTrunNum))
+                .ToList();
+            foreach(var buff in validBuffs)
+            {
+                print($"Valid Buff for User {i}: HP +{buff.upHp}, Damage +{buff.upDamge}, Critical +{buff.upCritical}, Damage Taken Multiplier +{buff.damageTakenMultiplier}");
+                propertyNum.Add((upState.upHp + upState.upDamge + upState.upCritical + upState.damageTakenMultiplier) / 100);
+                upStateDatas.Add(upState);  
             }
 
             for(int j = 0; j < propertyNum.Count; j++)
