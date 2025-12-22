@@ -184,25 +184,27 @@ public class PlayerJobSkill : NetworkBehaviour
         {
             List<UpStateData> upStateDatas = new();
             List<float> propertyNum = new();
-            // for (int j = 0; j < upStateGroups.Count; j++)
+           
+            // foreach(UpStateData upState in upStateGroups[i].upStateData)
             // {
-            //     foreach(UpStateData upState in upStateGroups[j].upStateData)
+            //     if((int)upState.targetUserID == i)
             //     {
-            //         if((int)upState.targetUserID == i)
+            //         if(upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value)
             //         {
-            //             if(upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value)
-            //             {
-            //                 if((upState.endTrunNum == -1) || (GameManager.Instance.totalTrunNum.Value <= upState.endTrunNum))
-            //                 {// -1 mean infinit
-            //                     print("Success Accoes Income Buffe . . .");
-            //                     propertyNum.Add((upState.upHp + upState.upDamge + upState.upCritical + upState.damageTakenMultiplier) / 100);
-            //                     upStateDatas.Add(upState);     
-            //                 }
-                               
+            //             if((upState.endTrunNum == -1) || (GameManager.Instance.totalTrunNum.Value <= upState.endTrunNum))
+            //             {// -1 mean infinit
+            //                 print("Success Accoes Income Buffe . . .");
+            //                 propertyNum.Add((upState.upHp + upState.upDamge + upState.upCritical + upState.damageTakenMultiplier) / 100);
+            //                 upStateDatas.Add(upState);     
             //             }
+            //             else 
+            //                 upStateGroups[i].upStateData.Remove(upState);
             //         }
+            //         else 
+            //             upStateGroups[i].upStateData.Remove(upState);
             //     }
             // }
+
             var validBuffs = upStateGroups.SelectMany(group => group.upStateData)
                 .Where(upState => (int)upState.targetUserID == i &&
                                   upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value &&
@@ -211,19 +213,31 @@ public class PlayerJobSkill : NetworkBehaviour
             foreach(var buff in validBuffs)
             {
                 print($"Valid Buff for User {i}: HP +{buff.upHp}, Damage +{buff.upDamge}, Critical +{buff.upCritical}, Damage Taken Multiplier +{buff.damageTakenMultiplier}");
-                propertyNum.Add((upState.upHp + upState.upDamge + upState.upCritical + upState.damageTakenMultiplier) / 100);
-                upStateDatas.Add(upState);  
+                propertyNum.Add((buff.upHp + buff.upDamge + buff.upCritical + buff.damageTakenMultiplier) / 100);
+                upStateDatas.Add(buff);  
             }
 
-            for(int j = 0; j < propertyNum.Count; j++)
+            // for(int j = 0; j < propertyNum.Count; j++)
+            // {
+            //     float maxValue = propertyNum.Max();
+            //     int maxIndex = propertyNum.IndexOf(maxValue);
+            //     GameManager.Instance.InUserUpStat(upStateDatas[maxIndex].upHp, upStateDatas[maxIndex].upDamge, 
+            //         upStateDatas[maxIndex].upCritical, upStateDatas[maxIndex].damageTakenMultiplier, upStateDatas[maxIndex].beneficialEffectMultiplier, (ulong)i,
+            //         upStateDatas[maxIndex].cardType, upStateDatas[maxIndex].cardIndex);   
+            //     propertyNum.RemoveAt(maxIndex);
+            //     upStateDatas.RemoveAt(maxIndex);
+            //     print("Success Send Data . . .");
+            // }
+            int propertyNumCount = propertyNum.Count;
+            for(int j = 0; j < propertyNumCount; j++)
             {
                 float maxValue = propertyNum.Max();
                 int maxIndex = propertyNum.IndexOf(maxValue);
-                GameManager.Instance.InUserUpStat(upStateDatas[maxIndex].upHp, upStateDatas[maxIndex].upDamge, 
-                    upStateDatas[maxIndex].upCritical, upStateDatas[maxIndex].damageTakenMultiplier, upStateDatas[maxIndex].beneficialEffectMultiplier, (ulong)i,
-                    upStateDatas[maxIndex].cardType, upStateDatas[maxIndex].cardIndex);   
+                GameManager.Instance.InUserUpStat(validBuffs[maxIndex].upHp, validBuffs[maxIndex].upDamge, 
+                    validBuffs[maxIndex].upCritical, validBuffs[maxIndex].damageTakenMultiplier, validBuffs[maxIndex].beneficialEffectMultiplier, (ulong)i,
+                    validBuffs[maxIndex].cardType, validBuffs[maxIndex].cardIndex);   
                 propertyNum.RemoveAt(maxIndex);
-                upStateDatas.RemoveAt(maxIndex);
+                validBuffs.RemoveAt(maxIndex);
                 print("Success Send Data . . .");
             }
         }
@@ -278,8 +292,6 @@ public class PlayerJobSkill : NetworkBehaviour
     // 💡 핵심 변경: 복잡한 switch-case가 사라지고 단 3줄로 끝남!
     public void TriggerSkillFromChoosEnemyOrTeam()
     {
-        
-
         print("플레이어 스킬 스크립트 - 이벤트 트리거 작동!");
         int currentTurn = GameManager.Instance.totalTrunNum.Value;
 
