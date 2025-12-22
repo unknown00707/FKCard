@@ -48,7 +48,7 @@ public class UserHealData
     public float healAmount;
 }
 
-public class PlayerJobSkill : MonoBehaviour
+public class PlayerJobSkill : NetworkBehaviour
 {
     [Header("Manager")]
     public CardEffectAndCulDuringManager ceacdManager;
@@ -132,17 +132,17 @@ public class PlayerJobSkill : MonoBehaviour
         if(isToPlayer) toUserID = index;
         else toEnemyID = index;
     }
-    
-    public void UpStateForIDUser(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
+    [ServerRpc]
+    public void UpStateForIDUserServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
         print("버프 임시 저장 보내기!");
-        player.UpUserStatTemporary(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier, cardType , cardIndex);
+        GameManager.Instance?.InStorUserUpStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier,OwnerClientId, cardType, cardIndex);
     }
-    
-    public void GiveDamageForIDUser(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
+    [ServerRpc]
+    public void GiveDamageForIDUserServerRpc(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
     {
         print("데미지 임시 저장 보내기!");
-        player.UpUserDamageTemporary(userId, isForEnemy ,startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits);
+        GameManager.Instance?.InStorUserDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits, OwnerClientId);
     }
     //버프 임시 저장
     public void ReciveUpUserStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
@@ -175,7 +175,8 @@ public class PlayerJobSkill : MonoBehaviour
     }
 
     // 버프 데이터 보내기
-    public void ReciveUpUserStateByBufferCard()
+    [ServerRpc]
+    public void ReciveUpUserStateByBufferCardServerRpc()
     {
         print("버프 저장 보내기!");
         // 적용될 버프의 우선순위 분류 및 적용
@@ -207,7 +208,7 @@ public class PlayerJobSkill : MonoBehaviour
             {
                 float maxValue = propertyNum.Max();
                 int maxIndex = propertyNum.IndexOf(maxValue);
-                player.UpUserStatIFO(i, upStateDatas[maxIndex].upHp, upStateDatas[maxIndex].upDamge, 
+                GameManager.Instance?.InUserUpStat(i, upStateDatas[maxIndex].upHp, upStateDatas[maxIndex].upDamge, 
                     upStateDatas[maxIndex].upCritical, upStateDatas[maxIndex].damageTakenMultiplier, upStateDatas[maxIndex].beneficialEffectMultiplier,
                     upStateDatas[maxIndex].cardType, upStateDatas[maxIndex].cardIndex);   
                 propertyNum.RemoveAt(maxIndex);
@@ -217,7 +218,8 @@ public class PlayerJobSkill : MonoBehaviour
         }
     }
     // 데미지 저장 보내기
-    public void ReciveUpUserDamage()
+    [ServerRpc]
+    public void ReciveUpUserDamageServerRpc()
     {
         print("데미지 저장 보내기!");
         for(int i = 0; i < userDamaingChangTemproy.Count; i++)
@@ -227,16 +229,17 @@ public class PlayerJobSkill : MonoBehaviour
                 if(userDamaingChangTemproy[i].userHitDamages[j].startTrunNum <= GameManager.Instance.totalTrunNum.Value)
                 {
                     if((GameManager.Instance.totalTrunNum.Value <= userDamaingChangTemproy[i].userHitDamages[j].endTrunNum) || GameManager.Instance.totalTrunNum.Value == -1) 
-                        player.UpDamageUserInOut(userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID, userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy, 
+                        GameManager.Instance?.InDamageToUser(userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID, userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy, 
                             userDamaingChangTemproy[i].userHitDamages[j].hitHp,userDamaingChangTemproy[i].userHitDamages[j].hitDamge, 
                             userDamaingChangTemproy[i].userHitDamages[j].hitTakenDg, userDamaingChangTemproy[i].userHitDamages[j].numberOfHits);
                 }    
             }
         }
     }
-    public void GiveHealToTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
+    [ServerRpc]
+    public void GiveHealToTemproyServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
     {
-        player.ToHealTemporary(userId, startDurTimeTrun, endDurTineTrun, healAmount);
+        GameManager.Instance?.InComeHealTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
     }
     // 힐량 임시 저장
     public void ReciveUpHealDataTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
@@ -249,7 +252,6 @@ public class PlayerJobSkill : MonoBehaviour
             healAmount = healAmount
         });
     }
-
     // 힐량 보내기
     public void RequsetHealDataSend()
     {
@@ -265,6 +267,8 @@ public class PlayerJobSkill : MonoBehaviour
     // 💡 핵심 변경: 복잡한 switch-case가 사라지고 단 3줄로 끝남!
     public void TriggerSkillFromChoosEnemyOrTeam()
     {
+        if (!IsOwner) return;
+
         print("플레이어 스킬 스크립트 - 이벤트 트리거 작동!");
         int currentTurn = GameManager.Instance.totalTrunNum.Value;
 
@@ -279,7 +283,7 @@ public class PlayerJobSkill : MonoBehaviour
         }
 
         // 직업 카드 스킬 저장 후 카드 발동 준비 됨
-        player.ReciveSignCardEffectReady(false);
+        GameManager.Instance?.InCardEffectReady(false, OwnerClientId);
     }
     public void DefenderSkills(int index)
     {

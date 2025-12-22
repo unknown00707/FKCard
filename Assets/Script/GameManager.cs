@@ -203,8 +203,8 @@ public class GameManager : NetworkBehaviour
             }
         }
         print("받은 임시 데이터 보내기!");
-        playerJobSkill.ReciveUpUserStateByBufferCard();
-        playerJobSkill.ReciveUpUserDamage();
+        playerJobSkill.ReciveUpUserStateByBufferCardServerRpc();
+        playerJobSkill.ReciveUpUserDamageServerRpc();
         playerJobSkill.RequsetHealDataSend();
         print("턴의 변화 확인!");
         isPlayerTrun.Value = !isPlayerTrun.Value; // 턴 넘어갈 타이밍 , 보스/몬스터 턴
