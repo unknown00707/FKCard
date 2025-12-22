@@ -136,13 +136,13 @@ public class PlayerJobSkill : NetworkBehaviour
     public void UpStateForIDUserServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
         print("버프 임시 저장 보내기!");
-        GameManager.Instance?.InStorUserUpStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier,OwnerClientId, cardType, cardIndex);
+        GameManager.Instance.InStorUserUpStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier,OwnerClientId, cardType, cardIndex);
     }
     [ServerRpc]
     public void GiveDamageForIDUserServerRpc(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
     {
         print("데미지 임시 저장 보내기!");
-        GameManager.Instance?.InStorUserDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits, OwnerClientId);
+        GameManager.Instance.InStorUserDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits, OwnerClientId);
     }
     //버프 임시 저장
     public void ReciveUpUserStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
@@ -208,8 +208,8 @@ public class PlayerJobSkill : NetworkBehaviour
             {
                 float maxValue = propertyNum.Max();
                 int maxIndex = propertyNum.IndexOf(maxValue);
-                GameManager.Instance?.InUserUpStat(i, upStateDatas[maxIndex].upHp, upStateDatas[maxIndex].upDamge, 
-                    upStateDatas[maxIndex].upCritical, upStateDatas[maxIndex].damageTakenMultiplier, upStateDatas[maxIndex].beneficialEffectMultiplier,
+                GameManager.Instance.InUserUpStat(upStateDatas[maxIndex].upHp, upStateDatas[maxIndex].upDamge, 
+                    upStateDatas[maxIndex].upCritical, upStateDatas[maxIndex].damageTakenMultiplier, upStateDatas[maxIndex].beneficialEffectMultiplier, (ulong)i,
                     upStateDatas[maxIndex].cardType, upStateDatas[maxIndex].cardIndex);   
                 propertyNum.RemoveAt(maxIndex);
                 upStateDatas.RemoveAt(maxIndex);
@@ -229,8 +229,8 @@ public class PlayerJobSkill : NetworkBehaviour
                 if(userDamaingChangTemproy[i].userHitDamages[j].startTrunNum <= GameManager.Instance.totalTrunNum.Value)
                 {
                     if((GameManager.Instance.totalTrunNum.Value <= userDamaingChangTemproy[i].userHitDamages[j].endTrunNum) || GameManager.Instance.totalTrunNum.Value == -1) 
-                        GameManager.Instance?.InDamageToUser(userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID, userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy, 
-                            userDamaingChangTemproy[i].userHitDamages[j].hitHp,userDamaingChangTemproy[i].userHitDamages[j].hitDamge, 
+                        GameManager.Instance.InDamageToUser(userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID, userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy, 
+                            OwnerClientId, userDamaingChangTemproy[i].userHitDamages[j].hitHp,userDamaingChangTemproy[i].userHitDamages[j].hitDamge, 
                             userDamaingChangTemproy[i].userHitDamages[j].hitTakenDg, userDamaingChangTemproy[i].userHitDamages[j].numberOfHits);
                 }    
             }
@@ -239,7 +239,7 @@ public class PlayerJobSkill : NetworkBehaviour
     [ServerRpc]
     public void GiveHealToTemproyServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
     {
-        GameManager.Instance?.InComeHealTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
+        GameManager.Instance.InComeHealTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
     }
     // 힐량 임시 저장
     public void ReciveUpHealDataTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
@@ -267,7 +267,7 @@ public class PlayerJobSkill : NetworkBehaviour
     // 💡 핵심 변경: 복잡한 switch-case가 사라지고 단 3줄로 끝남!
     public void TriggerSkillFromChoosEnemyOrTeam()
     {
-        if (!IsOwner) return;
+        
 
         print("플레이어 스킬 스크립트 - 이벤트 트리거 작동!");
         int currentTurn = GameManager.Instance.totalTrunNum.Value;
@@ -283,7 +283,7 @@ public class PlayerJobSkill : NetworkBehaviour
         }
 
         // 직업 카드 스킬 저장 후 카드 발동 준비 됨
-        GameManager.Instance?.InCardEffectReady(false, OwnerClientId);
+        player.ReciveSignCardEffectReady(false);
     }
     public void DefenderSkills(int index)
     {
@@ -324,7 +324,7 @@ public class PlayerJobSkill : NetworkBehaviour
                 {
                     if((ulong)i != NetworkManager.Singleton.LocalClientId)
                     {
-                        UpStateForIDUser((ulong)i, currentTrun , currentTrun + 3, 0, 0.15f, 0, 1.2f, 0, job, cardIndex);
+                        UpStateForIDUserServerRpc((ulong)i, currentTrun , currentTrun + 3, 0, 0.15f, 0, 1.2f, 0, job, cardIndex);
                     }
                 }
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);

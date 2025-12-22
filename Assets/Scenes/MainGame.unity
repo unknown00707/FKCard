@@ -1525,6 +1525,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 361320982}
+  - component: {fileID: 361320984}
   - component: {fileID: 361320983}
   m_Layer: 0
   m_Name: PlayerJobSkillManager
@@ -1560,6 +1561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fdfda872b2af65468b58fa9be2bf5c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerJobSkill
+  ShowTopMostFoldoutHeaderGroup: 1
   ceacdManager: {fileID: 1054227398}
   chooseEnemyOrTeam: {fileID: 1965944028}
   cardSpaceCheck: {fileID: 1392324696}
@@ -1576,6 +1578,31 @@ MonoBehaviour:
   isSingleAttack: 0
   job: 0
   cardIndex: 0
+--- !u!114 &361320984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 361320981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1163378249
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1 &393212971
 GameObject:
   m_ObjectHideFlags: 0
@@ -3684,9 +3711,9 @@ MonoBehaviour:
   cardSpaceCheck: {fileID: 1392324696}
   jobHp: 0
   jobDG: 0
-  jobCIRP: 0
-  jobTaknMultiplor: 0
-  jobBenfitMultiplier: 0
+  jobCrit: 0
+  jobTakenMultiplier: 0
+  jobBenefitMultiplier: 0
   jobName: {fileID: 2127301281}
   jobExplain: {fileID: 734774609}
   seletedObj: {fileID: 39196504}
@@ -7105,7 +7132,19 @@ MonoBehaviour:
   isForPlayer: 0
   OnReadyToAttack:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 361320983}
+        m_TargetAssemblyTypeName: PlayerJobSkill, Assembly-CSharp
+        m_MethodName: TriggerSkillFromChoosEnemyOrTeam
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &2006101738
 GameObject:
   m_ObjectHideFlags: 0

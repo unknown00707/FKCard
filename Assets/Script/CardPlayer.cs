@@ -97,4 +97,17 @@ public class CardPlayer : NetworkBehaviour
         if(GameManager.Instance != null)
             GameManager.Instance.RequsetMakeSameCardPublic(job, index, OwnerClientId);
     }
+    public void ReciveSignCardEffectReady(bool isReady)
+    {
+        if (!IsOwner) return;
+
+        RequsetCardReadyToEffectServerRpc(isReady);
+    }
+
+    [ServerRpc]
+    private void RequsetCardReadyToEffectServerRpc(bool isReady)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InCardEffectReady(isReady, OwnerClientId);
+    }
 }

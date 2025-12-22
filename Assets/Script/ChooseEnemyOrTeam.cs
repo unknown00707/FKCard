@@ -39,8 +39,8 @@ public class ChooseEnemyOrTeam : MonoBehaviour
             if(isMe || (GameManager.Instance.playerTotalNum.Value == 1))
             {
                 print("유저가 한 명! 강제 실행 작동. . .");
-                playerJobSkill.ReciveTargetUserIDFromChoose(NetworkManager.Singleton.LocalClientId, isForPlayer);
                 BasciInit();
+                playerJobSkill.ReciveTargetUserIDFromChoose(NetworkManager.Singleton.LocalClientId, isForPlayer);
                 OnReadyToAttack.Invoke();
                 return;
             }
