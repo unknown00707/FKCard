@@ -13,11 +13,13 @@ public class EnemyCulGroup : MonoBehaviour
 {
     public StateCulManager stateCulManager;
     public CardEffectAndCulDuringManager cEACDManager;
+    public TurnManager turnManager;
     public Button[] enemyPrefabs;
     public TextMeshProUGUI totalHP;
     public TextMeshProUGUI totalDG;
     [Header("Monster")]
     public List<EnemyMonster> stageMonsters;
+    public Dictionary<int, EnemyCardData> activeMonsterDic = new();
     [Header("Boss")]
     public Button[] stageBoss;
 
@@ -64,6 +66,8 @@ public class EnemyCulGroup : MonoBehaviour
 
             textpro[0].text = prefabData.enemyHP.ToString();
             textpro[1].text = prefabData.enemyDamage.ToString();
+
+            activeMonsterDic.Add(i, enemyCardData);
         }
     }
 
@@ -93,14 +97,14 @@ public class EnemyCulGroup : MonoBehaviour
             for (int i = userDamgeGroup.damage.Count - 1; i >= 0; i--)
             {
                 UserAoubtDamage damageData = userDamgeGroup.damage[i];
-                if (damageData.cuurentTrun != GameManager.Instance.totalTrunNum.Value)
+                if (damageData.cuurentTrun != turnManager.GiveTurnValue())
                     continue;
 
                 if (damageData.isTargetEnemy) // 몬스터 공격
                 {
                     // 타겟 몬스터 가져오기
                     // (TargetID가 유효한지, 몬스터가 살아있는지 체크하는 함수가 있다고 가정)
-                    EnemyCardData targetEnemy = GetEnemyByID(damageData.targetMonsterID);
+                    EnemyCardData targetEnemy = activeMonsterDic[(int)damageData.targetMonsterID];
 
                     while (damageData.numberOfHits > 0)
                     {
@@ -142,26 +146,13 @@ public class EnemyCulGroup : MonoBehaviour
             print("적에게 데미지 가하기 성공!");
         }
     }
-    // ID로 몬스터 찾는 함수
-    EnemyCardData GetEnemyByID(ulong id)
-    {
-        if (id < (ulong)enemyPrefabs.Length && enemyPrefabs[id].gameObject.activeSelf)
-        {
-            return enemyPrefabs[id].GetComponent<EnemyCardData>();
-        }
-        return null;
-    }
-
     // 살아있는 아무 몬스터나 찾는 함수 (공격 전이용)
     EnemyCardData FindAliveEnemy()
     {
-        foreach (var enemyObj in enemyPrefabs)
+        foreach (EnemyCardData keyValue in activeMonsterDic.Values)
         {
-            if (enemyObj.gameObject.activeSelf)
-            {
-                var data = enemyObj.GetComponent<EnemyCardData>();
-                if (data.enemyHP > 0) return data;
-            }
+            if (keyValue.enemyHP > 0)
+                return keyValue;
         }
         return null; // 다 죽음
     }

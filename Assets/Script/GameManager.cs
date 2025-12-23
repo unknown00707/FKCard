@@ -12,19 +12,15 @@ public class GameManager : NetworkBehaviour
 
     // 기본적으로 NetworkVariable은 서버만 쓸 수 있고(Write), 모두가 읽을 수 있어(Read).
     public NetworkList<FixedString64Bytes> playerJobs;
-    public NetworkVariable<int> playerTotalNum = new();
-    public NetworkVariable<int> totalTrunNum = new();
-    public NetworkVariable<int> currentStageNum = new();
     public NetworkList<bool> playerReady = new(); // 직업 선택 준비
     public NetworkList<bool> playerCardSetReady = new(); // 턴 넘길 준비
-    public NetworkVariable<bool> isPlayerTrun = new();
-    public NetworkVariable<int> stageNum = new(); // 스테이지 큰 수
-    public NetworkVariable<int> sideStageNum = new(); // 스테이지 작은 수
     JobManager jobManager;
     CardSpaceCheck cardSpaceCheck;
     CardEffectAndCulDuringManager durManager;
     PlayerJobSkill playerJobSkill;
     StageManager stageManager;
+    NetworkSessionManager networkSessionManager;
+    TurnManager turnManager;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -41,6 +37,8 @@ public class GameManager : NetworkBehaviour
         durManager = FindAnyObjectByType<CardEffectAndCulDuringManager>();
         playerJobSkill = FindAnyObjectByType<PlayerJobSkill>();
         stageManager = FindAnyObjectByType<StageManager>();
+        networkSessionManager = FindAnyObjectByType<NetworkSessionManager>();
+        turnManager = FindAnyObjectByType<TurnManager>();
 
         playerJobs = new NetworkList<FixedString64Bytes>(
             new List<FixedString64Bytes>{new("0"), new("1"), new("2")},
@@ -66,66 +64,43 @@ public class GameManager : NetworkBehaviour
     {
         if(IsServer)
         {
-            playerTotalNum.Value = NetworkManager.Singleton.ConnectedClientsList.Count;
-            isPlayerTrun.Value = true;
-            totalTrunNum.Value = 0;
-            currentStageNum.Value = 0;
-            stageNum.Value = 0;
-            sideStageNum.Value = 0;
+            networkSessionManager.Init();
+            turnManager.Init();
+            stageManager.Init();
         }
 
         // 리스너 등록
-        playerTotalNum.OnValueChanged += OnPlayerTotalNumChanged;
-        isPlayerTrun.OnValueChanged += OnPlayerTrunIsOn;
         playerJobs.OnListChanged += OnPlayerJobsChanged;
         playerReady.OnListChanged += OnPlayerReadyChanged;
-        playerCardSetReady.OnListChanged += OnPlayerTrunCulChanged;
-        stageNum.OnValueChanged += OnStageNumChanged;
-        sideStageNum.OnValueChanged += OnStageNumChanged;
+        playerCardSetReady.OnListChanged += OnPlayerSetCardChanged;
     }
 
 
     public override void OnNetworkDespawn()
     {
         // 리스너 해제
-        playerTotalNum.OnValueChanged -= OnPlayerTotalNumChanged;
-        isPlayerTrun.OnValueChanged -= OnPlayerTrunIsOn;
         playerJobs.OnListChanged -= OnPlayerJobsChanged;
         playerReady.OnListChanged -= OnPlayerReadyChanged;
-        playerCardSetReady.OnListChanged -= OnPlayerTrunCulChanged;
-        stageNum.OnValueChanged -= OnStageNumChanged;
-        sideStageNum.OnValueChanged -= OnStageNumChanged;
+        playerCardSetReady.OnListChanged -= OnPlayerSetCardChanged;
+        stageManager.DisInit();
+        turnManager.DisInit();
+        networkSessionManager.DisInit();
     }
 
     
-    void OnPlayerTotalNumChanged(int oldValue, int newValue)
-    {
-        UnityEngine.Debug.Log("플레이어 수 조정  {oldValue} -> {newValue} . . . 난이도 조정 중. . .");
-    }
+    
     void OnPlayerJobsChanged(NetworkListEvent<FixedString64Bytes> changeEvent)
     {
-        jobManager.ReciveJobsDataPublic(playerJobs, playerTotalNum.Value);
+        jobManager.ReciveJobsDataPublic(playerJobs, networkSessionManager.playerTotalNum.Value);
     }
 
     void OnPlayerReadyChanged(NetworkListEvent<bool> changeEvent)
     {
         jobManager.ReciveReadySignPublic(playerReady);
     }
-
-    void OnPlayerTrunCulChanged(NetworkListEvent<bool> changeEvent)
+    void OnPlayerSetCardChanged(NetworkListEvent<bool> changeEvent)
     {
         // 턴 넘김 효과 . . .
-    }
-
-
-    void OnPlayerTrunIsOn(bool oldValue, bool newValue)
-    {
-        // 턴 변화시 UI 효과
-    }
-
-    void OnStageNumChanged(int oldValue, int newValue)
-    {
-        stageManager.MakeSameTextStage(stageNum.Value, sideStageNum.Value);
     }
     // 직업 선택 
     public void InDicUserJobValue(ulong index, JobManager.Jobs job)
@@ -144,7 +119,7 @@ public class GameManager : NetworkBehaviour
     {
         if(!IsServer) return;
         
-        for(int i = 0; i < playerTotalNum.Value; i++)
+        for(int i = 0; i < networkSessionManager.GivePlayerTotalNum(); i++)
         {
             if(!playerReady[i])
             {
@@ -194,22 +169,20 @@ public class GameManager : NetworkBehaviour
     }
     private void CheckCardEffectReady()
     {
-        for(int i = 0; i < playerTotalNum.Value; i ++)
+        for(int i = 0; i < networkSessionManager.GivePlayerTotalNum(); i ++)
         {
             if(playerCardSetReady[i])
-            {
-                isPlayerTrun.Value = true;
                 return;
-            }
         }
+
         print("받은 임시 데이터 보내기!");
         playerJobSkill.ReciveUpUserStateByBufferCardServerRpc();
         playerJobSkill.ReciveUpUserDamageServerRpc();
         playerJobSkill.RequsetHealDataSend();
         print("턴의 변화 확인!");
-        isPlayerTrun.Value = !isPlayerTrun.Value; // 턴 넘어갈 타이밍 , 보스/몬스터 턴
+        turnManager.ChangeTurnBoolValue(); // 턴 넘어갈 타이밍 , 보스/몬스터 턴
         stageManager.ReciveSignToChangeTrun();
-        totalTrunNum.Value++;
+        turnManager.ChangeTurnNumValue();
     }
 
     // 유저의 버프 스텟을 임시 저장
@@ -250,16 +223,20 @@ public class GameManager : NetworkBehaviour
 
         playerJobSkill.ReciveUpHealDataTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
     }
-
+    ////// send data
+    public int SendPlayerTotalNum()
+    {
+        return networkSessionManager.GivePlayerTotalNum();
+    }
 
     public override void OnDestroy()
     {
+        // NetworkVariable도 Dispose가 필요합니다.
         playerJobs?.Dispose();
-        isPlayerTrun?.Dispose();
-        playerTotalNum?.Dispose(); // NetworkVariable도 Dispose가 필요합니다.
         playerReady?.Dispose();
         playerCardSetReady?.Dispose();
+        networkSessionManager.DisposeFounction();
+        turnManager.DisposeFounction();
+        stageManager.DisposeFounction();
     }
-
-    
 }

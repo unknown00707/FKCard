@@ -10,6 +10,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
     public JobManager jobManager;
     public EnemyCulGroup enemyCulGroup;
     public PlayerJobSkill playerJobSkill;
+    public TurnManager turnManager;
     public GameObject chooseObj;
     public Button[] seletedBTN; 
     public bool isForPlayer;
@@ -36,7 +37,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
 
         if(isForPlayer)
         {
-            if(isMe || (GameManager.Instance.playerTotalNum.Value == 1))
+            if(isMe || (turnManager.GiveTurnValue() == 1))
             {
                 print("유저가 한 명! 강제 실행 작동. . .");
                 BasciInit();
@@ -46,7 +47,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
             }
             else
             {
-                for(int i = 0; i < GameManager.Instance.playerTotalNum.Value; i++)
+                for(int i = 0; i < turnManager.GiveTurnValue(); i++)
                 {
                     
                     Image icon = seletedBTN[i].image;

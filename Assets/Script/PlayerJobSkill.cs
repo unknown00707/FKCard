@@ -55,6 +55,7 @@ public class PlayerJobSkill : NetworkBehaviour
     public ChooseEnemyOrTeam chooseEnemyOrTeam;
     public CardSpaceCheck cardSpaceCheck;
     public EnemyCulGroup enemyCulGroup;
+    public TurnManager turnManager;
     [Header("Data")]
     public ulong toUserID;
     public ulong toEnemyID;
@@ -207,8 +208,8 @@ public class PlayerJobSkill : NetworkBehaviour
 
             var validBuffs = upStateGroups.SelectMany(group => group.upStateData)
                 .Where(upState => (int)upState.targetUserID == i &&
-                                  upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value &&
-                                  (upState.endTrunNum == -1 || GameManager.Instance.totalTrunNum.Value <= upState.endTrunNum))
+                                  upState.startTrunNum <= turnManager.GiveTurnValue() &&
+                                  (upState.endTrunNum == -1 || turnManager.GiveTurnValue() <= upState.endTrunNum))
                 .ToList();
             foreach(var buff in validBuffs)
             {
@@ -251,9 +252,9 @@ public class PlayerJobSkill : NetworkBehaviour
         {
             for(int j = 0; j < userDamaingChangTemproy[i].userHitDamages.Count; j++)
             {
-                if(userDamaingChangTemproy[i].userHitDamages[j].startTrunNum <= GameManager.Instance.totalTrunNum.Value)
+                if(userDamaingChangTemproy[i].userHitDamages[j].startTrunNum <= turnManager.GiveTurnValue())
                 {
-                    if((GameManager.Instance.totalTrunNum.Value <= userDamaingChangTemproy[i].userHitDamages[j].endTrunNum) || GameManager.Instance.totalTrunNum.Value == -1) 
+                    if((turnManager.GiveTurnValue() <= userDamaingChangTemproy[i].userHitDamages[j].endTrunNum) || turnManager.GiveTurnValue() == -1) 
                         GameManager.Instance.InDamageToUser(userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID, userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy, 
                             OwnerClientId, userDamaingChangTemproy[i].userHitDamages[j].hitHp,userDamaingChangTemproy[i].userHitDamages[j].hitDamge, 
                             userDamaingChangTemproy[i].userHitDamages[j].hitTakenDg, userDamaingChangTemproy[i].userHitDamages[j].numberOfHits);
@@ -282,9 +283,9 @@ public class PlayerJobSkill : NetworkBehaviour
     {
         for(int i = 0; i < userHealDataTemproy.Count; i++)
         {
-            if(userHealDataTemproy[i].startTrunNum <= GameManager.Instance.totalTrunNum.Value)
+            if(userHealDataTemproy[i].startTrunNum <= turnManager.GiveTurnValue())
             {   
-                if(GameManager.Instance.totalTrunNum.Value < userHealDataTemproy[i].endDurTineTrun)
+                if(turnManager.GiveTurnValue() < userHealDataTemproy[i].endDurTineTrun)
                     ceacdManager.ReciveHealData(userHealDataTemproy[i].givenUserId, userHealDataTemproy[i].healAmount);
             }    
         }
@@ -293,7 +294,7 @@ public class PlayerJobSkill : NetworkBehaviour
     public void TriggerSkillFromChoosEnemyOrTeam()
     {
         print("플레이어 스킬 스크립트 - 이벤트 트리거 작동!");
-        int currentTurn = GameManager.Instance.totalTrunNum.Value;
+        int currentTurn = turnManager.GiveTurnValue();
 
         // Dictionary에서 해당 직업/카드의 효과를 찾아서 실행
         if (cardEffects.TryGetValue((job, cardIndex), out ICardEffect effect))
@@ -310,7 +311,7 @@ public class PlayerJobSkill : NetworkBehaviour
     }
     public void DefenderSkills(int index)
     {
-         int currentTrun = GameManager.Instance.totalTrunNum.Value;
+         int currentTrun = turnManager.GiveTurnValue();
         switch(index)
         {
             case 0:
@@ -343,7 +344,7 @@ public class PlayerJobSkill : NetworkBehaviour
             case 5:
                 job = JobManager.Jobs.defender;
                 cardIndex = 5;
-                for(int i = 0; i < GameManager.Instance.playerTotalNum.Value; i++)
+                for(int i = 0; i < turnManager.GiveTurnValue(); i++)
                 {
                     if((ulong)i != NetworkManager.Singleton.LocalClientId)
                     {

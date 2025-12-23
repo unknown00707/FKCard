@@ -11,7 +11,7 @@ public class HealerCard1Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        for (int i = 0; i < GameManager.Instance.playerTotalNum.Value; i++)
+        for (int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
             skillManager.GiveHealToTemproyServerRpc((ulong)i, currentTurn, currentTurn + 1, 0.075f);
         }
@@ -21,7 +21,7 @@ public class HealerCard3Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        for (int i = 0; i < GameManager.Instance.playerTotalNum.Value; i++)
+        for (int i = 0; i <  GameManager.Instance.SendPlayerTotalNum(); i++)
         {
             skillManager.GiveHealToTemproyServerRpc((ulong)i, currentTurn, currentTurn + 1, Random.Range(3f, 16f) / 100);
         }
@@ -31,7 +31,7 @@ public class HealerCard4Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        for (int i = 0; i < GameManager.Instance.playerTotalNum.Value; i++)
+        for (int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
             skillManager.UpStateForIDUserServerRpc((ulong)i, currentTurn, currentTurn + 1, 0.05f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
         }

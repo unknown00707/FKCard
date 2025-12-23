@@ -44,7 +44,7 @@ public class WizardCard4Effect : ICardEffect
             if (skillManager.enemyCulGroup.enemyPrefabs[i].gameObject.activeInHierarchy)
                 skillManager.GiveDamageForIDUserServerRpc((ulong)i, true, currentTurn, currentTurn + 1, 0, 3.00f, 0, 1);
         }
-        for (int i = 0; i < GameManager.Instance.playerTotalNum.Value; i++)
+        for (int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
             skillManager.GiveDamageForIDUserServerRpc((ulong)i, false, currentTurn, currentTurn + 1, 0.30f, 0, 0, 1);
         }

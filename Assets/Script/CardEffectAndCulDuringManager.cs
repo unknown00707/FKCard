@@ -55,6 +55,7 @@ public class UserDamgeGroup
 
 public class CardEffectAndCulDuringManager : MonoBehaviour
 {
+    public TurnManager turnManager;
     public float[][] userState = new float[3][]; // 초기 유저의 정보 -> 안 변함 -> 스테이지 변하면 변함
     // 유저의 지속 기간에 따른 스텟 변화 저장
     public List<UserTime> userChangingState = new(); 
@@ -114,7 +115,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                     if(cardIndex == 4)
                     {
                         userChangingState[(int)userID].chaingingHp = 
-                                userAboutDamages[(int)userID].damage[GameManager.Instance.totalTrunNum.Value -1].inDamage * hp;
+                                userAboutDamages[(int)userID].damage[turnManager.GiveTurnValue() -1].inDamage * hp;
                     }
                     break; 
             }
@@ -151,7 +152,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
     }
     public void ReciveCardEffectDamage() // 데미지 정보 저장 -- 준 피해
     {
-        int currentTurn = GameManager.Instance.totalTrunNum.Value;
+        int currentTurn = turnManager.GiveTurnValue();
         for(int i = 0; i < userAboutDamages.Count; i++) // 가할 데미지 저장
         {
             float prevTakenDamage = 0f; // 기본값은 0

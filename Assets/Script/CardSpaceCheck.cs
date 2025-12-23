@@ -10,6 +10,7 @@ public class CardSpaceCheck : MonoBehaviour
 {
     private static WaitForSecondsRealtime _waitForSecondsRealtime10 = new(10f);
     public StateCulManager stateCulManager;
+    public TurnManager turnManager;
     public Transform[] spaces;
     public GameObject[] cardPrefabs;
     public GameObject canvers;
@@ -93,7 +94,7 @@ public class CardSpaceCheck : MonoBehaviour
     {  
         print("턴 진행 불가!!");
         isOkToGoInFC = false;
-        yield return new WaitUntil(() => GameManager.Instance.totalTrunNum.Value == correspondingTurn);
+        yield return new WaitUntil(() => turnManager.GiveTurnValue() == correspondingTurn);
         print("턴 진행 가능!! - - - 턴을 정상화 중 . . .!");
         isOkToGoInFC = true;
     }
