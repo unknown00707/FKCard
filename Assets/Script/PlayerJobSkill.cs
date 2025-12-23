@@ -214,7 +214,7 @@ public class PlayerJobSkill : NetworkBehaviour
             foreach(var buff in validBuffs)
             {
                 print($"Valid Buff for User {i}: HP +{buff.upHp}, Damage +{buff.upDamge}, Critical +{buff.upCritical}, Damage Taken Multiplier +{buff.damageTakenMultiplier}");
-                propertyNum.Add((buff.upHp + buff.upDamge + buff.upCritical + buff.damageTakenMultiplier) / 100);
+                propertyNum.Add((buff.upHp + buff.upDamge + buff.upCritical + buff.damageTakenMultiplier) / 100f);
                 upStateDatas.Add(buff);  
             }
 
