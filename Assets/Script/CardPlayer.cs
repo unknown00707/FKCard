@@ -131,7 +131,7 @@ public class CardPlayer : NetworkBehaviour
     public void RequsetUpStateByBuffeServerRpc(UpStateData package)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InUserUpStat(package, OwnerClientId);
+            GameManager.Instance.InUserUpStat(package);
     }
     [ServerRpc]
     public void RequsetUpDamageServerRpc(UserHitDamage package)
@@ -140,9 +140,9 @@ public class CardPlayer : NetworkBehaviour
             GameManager.Instance.InDamageToUser(package, OwnerClientId);
     }
     [ServerRpc]
-    public void RequsetHealDataSendServerRpc(UserHealData healAmount)
+    public void RequsetHealDataSendServerRpc(UserHealData healData)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.InComeHealTemproy(healAmount);
+            GameManager.Instance.InComeHealTemproy(healData);
     }
 }

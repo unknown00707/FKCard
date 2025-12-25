@@ -96,26 +96,26 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         userTotalStates[(int)userID].currentCritical = userTotalStates[(int)userID].maxCritical;
     }
 
-    public void ReciveUpStatUserByBuffer(UpStateData upStateData , ulong sendUserID) // 증가되는 유저 스텟 저장
+    public void ReciveUpStatUserByBuffer(UpStateData upStateData) // 증가되는 유저 스텟 저장
     {
         print("유저 정보 저장 시작");
-        if (userID < (ulong)userChangingState.Count)
+        if (upStateData.targetUserID < (ulong)userChangingState.Count)
         {
-            userChangingState[(int)userID] = new UserTime()
+            userChangingState[(int)upStateData.targetUserID] = new UserTime()
             {
-                chaingingHp = userTotalStates[(int)userID].maxHp*upStateData.upHp,
-                chaingingDG = userTotalStates[(int)userID].maxDG*upStateData.upDamge,
+                chaingingHp = userTotalStates[(int)upStateData.targetUserID].maxHp*upStateData.upHp,
+                chaingingDG = userTotalStates[(int)upStateData.targetUserID].maxDG*upStateData.upDamge,
                 chaingingCritical = upStateData.upCritical,
-                damageMultiplier = upStateData.damageMultiplier,
+                damageMultiplier = upStateData.damageTakenMultiplier,
                 beneficialEffectMultiplier = upStateData.beneficialEffectMultiplier
             };
-            switch(cardType)
+            switch(upStateData.cardType)
             {
                 case JobManager.Jobs.defender :
-                    if(cardIndex == 4)
+                    if(upStateData.cardIndex == 4)
                     {
-                        userChangingState[(int)userID].chaingingHp = 
-                                userAboutDamages[(int)userID].damage[turnManager.GiveTurnValue() -1].inDamage * upStateData.hp;
+                        userChangingState[(int)upStateData.targetUserID].chaingingHp = 
+                                userAboutDamages[(int)upStateData.targetUserID].damage[turnManager.GiveTurnValue() -1].inDamage * upStateData.upHp;
                     }
                     break; 
             }
@@ -134,17 +134,18 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
             print("유저 정보 : " + i + " 업데이트 성공");
         }
     }
-    public void ReciveDamageDataFromTemproy(ulong enemyID, bool isToEnemy, ulong sendUserID ,float damageFromHp, float damagFromDg, float damageFromTakenDg, int numberOfHits) // 데미지 임시 저장 -- > 이를 통해서 분류 
+    public void ReciveDamageDataFromTemproy(UserHitDamage package, ulong sendUserID) // 데미지 임시 저장 -- > 이를 통해서 분류 
     {
-        print("받은 정보 확인 !  : " + enemyID + "/" + isToEnemy + "/" + sendUserID + "/" + damageFromHp + "/" + damagFromDg + "/" + damageFromTakenDg + "/" + numberOfHits);
+        print("받은 정보 확인 !  : " + package.targetMonsterID + "/" + package.isTargetEnemy + "/" + package.hitHp + 
+        "/" +  package.hitDamge + "/" + package.hitTakenDg + "/" + package.numberOfHits + " 보낸 놈 : " + sendUserID);
         userDamaingChangs[(int)sendUserID] = new UserDamaingChang()
         {
-            targetMonsterID = enemyID,
-            isTargetEnemy = isToEnemy,
-            chaningDamaingForHp =  damageFromHp,
-            chaningDamaingForDamage = damagFromDg,
-            chaningDamaingForTakenDamage = damageFromTakenDg,
-            numberOfHits = numberOfHits
+            targetMonsterID = package.targetMonsterID,
+            isTargetEnemy = package.isTargetEnemy,
+            chaningDamaingForHp =  package.hitHp,
+            chaningDamaingForDamage = package.hitDamge,
+            chaningDamaingForTakenDamage = package.hitTakenDg,
+            numberOfHits = package.numberOfHits
         };
         
 

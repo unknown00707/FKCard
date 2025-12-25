@@ -176,8 +176,8 @@ public class GameManager : NetworkBehaviour
         }
 
         print("받은 임시 데이터 보내기!");
-        playerJobSkill.ReciveUpUserStateByBufferCardServerRpc();
-        playerJobSkill.ReciveUpUserDamageServerRpc();
+        playerJobSkill.ReciveUpUserStateByBufferCard();
+        playerJobSkill.ReciveUpUserDamage();
         playerJobSkill.RequsetHealDataSend();
         print("턴의 변화 확인!");
         turnManager.ChangeTurnBoolValue(); // 턴 넘어갈 타이밍 , 보스/몬스터 턴
@@ -193,35 +193,35 @@ public class GameManager : NetworkBehaviour
         print("버프 카드 사용 감지!");
         playerJobSkill.ReciveUpUserStatTemproy(upStateData, sendUserID);
     }
-    public void InStorUserDamageTemproy(UpStateData upStateData ,ulong sendUserID)
+    public void InStorUserDamageTemproy(UserHitDamage userHitDamage ,ulong sendUserID)
     {
         if(!IsServer) return;
 
-        playerJobSkill.ReciveUpDamageTemproy(upStateData, sendUserID);
+        playerJobSkill.ReciveUpDamageTemproy(userHitDamage, sendUserID);
     }
     // 유저 스텟 상승 효과 정보 저장
-    public void InUserUpStat(float hpIng, float dGing, float criticalIng, float damageMultiplier, float beneficialEffectMultiplier,ulong id, JobManager.Jobs cardType, int cardIndex)
+    public void InUserUpStat(UpStateData package)
     {
         if(!IsServer) return;
         print("버프 정보 저장 트리거 발동!");
-        durManager.ReciveUpStatUserByBuffer(hpIng, dGing, criticalIng, damageMultiplier, beneficialEffectMultiplier,id, cardType, cardIndex);
+        durManager.ReciveUpStatUserByBuffer(package);
     }
 
     // 유저가 입힐 / 입을 데미지 저장
-    public void InDamageToUser(ulong enemyID, bool isToEnemy, ulong sendUserID ,float damageFromHp, float damagFromDg, float damageFromTakenDg, int numberOfHits) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
+    public void InDamageToUser(UserHitDamage package, ulong sendUserID) // isToUser -> 유저에게 입힐 데미지 즉 받을 데미지 냐?
     {
         if(!IsServer) return;
 
         print("데미지 정보 발동!");
-        durManager.ReciveDamageDataFromTemproy(enemyID, isToEnemy, sendUserID, damageFromHp, damagFromDg , damageFromTakenDg, numberOfHits);
+        durManager.ReciveDamageDataFromTemproy(package, sendUserID);
     }
 
     // 유저가 줄 힐 임시 저장
-    public void InComeHealTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
+    public void InComeHealTemproy(UserHealData healData)
     {
         if(!IsServer) return;
 
-        playerJobSkill.ReciveUpHealDataTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
+        playerJobSkill.ReciveUpHealDataTemproy(healData);
     }
     ////// send data
     public int SendPlayerTotalNum()

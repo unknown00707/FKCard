@@ -4,7 +4,7 @@ public class HealerCard0Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.GiveHealToTemproyServerRpc(skillManager.toUserID, currentTurn, currentTurn + 1, 0.15f);
+        skillManager.GiveHealToTemproy(skillManager.toUserID, currentTurn, currentTurn + 1, 0.15f);
     }
 }
 public class HealerCard1Effect : ICardEffect
@@ -13,7 +13,7 @@ public class HealerCard1Effect : ICardEffect
     {
         for (int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
-            skillManager.GiveHealToTemproyServerRpc((ulong)i, currentTurn, currentTurn + 1, 0.075f);
+            skillManager.GiveHealToTemproy((ulong)i, currentTurn, currentTurn + 1, 0.075f);
         }
     }
 }
@@ -23,7 +23,7 @@ public class HealerCard3Effect : ICardEffect
     {
         for (int i = 0; i <  GameManager.Instance.SendPlayerTotalNum(); i++)
         {
-            skillManager.GiveHealToTemproyServerRpc((ulong)i, currentTurn, currentTurn + 1, Random.Range(3f, 16f) / 100);
+            skillManager.GiveHealToTemproy((ulong)i, currentTurn, currentTurn + 1, Random.Range(3f, 16f) / 100);
         }
     }
 }
@@ -33,7 +33,7 @@ public class HealerCard4Effect : ICardEffect
     {
         for (int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
-            skillManager.UpStateForIDUserServerRpc((ulong)i, currentTurn, currentTurn + 1, 0.05f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
+            skillManager.UpStateByBuffe((ulong)i, currentTurn, currentTurn + 1, 0.05f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
         }
     }
 }
@@ -41,13 +41,13 @@ public class HealerCard6Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.GiveHealToTemproyServerRpc(skillManager.toUserID, currentTurn, -1, 0.05f);
+        skillManager.GiveHealToTemproy(skillManager.toUserID, currentTurn, -1, 0.05f);
     }
 }
 public class HealerCard7Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.UpStateForIDUserServerRpc(skillManager.toUserID, currentTurn, currentTurn + 4, 0, 0, 0, 0, 0.5f, skillManager.job, skillManager.cardIndex);
+        skillManager.UpStateByBuffe(skillManager.toUserID, currentTurn, currentTurn + 4, 0, 0, 0, 0, 0.5f, skillManager.job, skillManager.cardIndex);
     }
 }

@@ -79,7 +79,7 @@ public class UserHealData : INetworkSerializable
     {
         serializer.SerializeValue(ref givenUserId);
         serializer.SerializeValue(ref startTrunNum);
-        serializer.SerializeValue(ref endTrunNum);
+        serializer.SerializeValue(ref endDurTineTrun);
         serializer.SerializeValue(ref healAmount);
     }
 }
@@ -175,15 +175,15 @@ public class PlayerJobSkill : NetworkBehaviour
         UpStateData package = new UpStateData
         {
             targetUserID = userId,
-            startTrunNum = start,
-            endTrunNum = end,
+            startTrunNum = startDurTimeTrun,
+            endTrunNum = endDurTineTrun,
             upHp = hp,
             upDamge = dg,
-            upCritical = cr,
-            damageTakenMultiplier = dm,
-            beneficialEffectMultiplier = be,
-            cardType = job,
-            cardIndex = idx
+            upCritical = critical,
+            damageTakenMultiplier = damageMultiplier,
+            beneficialEffectMultiplier = beneficialEffectMultiplier,
+            cardType = cardType,
+            cardIndex = cardIndex
         };
 
         if(IsOwner)
@@ -196,8 +196,8 @@ public class PlayerJobSkill : NetworkBehaviour
         {
             targetMonsterID = userId,
             isTargetEnemy = isForEnemy,
-            startTrunNum = start,
-            endTrunNum = end,
+            startTrunNum = startDurTimeTrun,
+            endTrunNum = endDurTineTrun,
             hitHp = hp,
             hitDamge = dg,
             hitTakenDg = takenDg,
@@ -208,32 +208,16 @@ public class PlayerJobSkill : NetworkBehaviour
             player.RequsetStoreDamageServerRpc(package);
     }
     //버프 임시 저장
-    public void ReciveUpUserStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
+    public void ReciveUpUserStatTemproy(UpStateData upStateData, ulong sendUserID)
     {
-        upStateGroups[(int)sendUserID].upStateData.Add(new UpStateData()
-        {
-           targetUserID = userId, startTrunNum = startDurTimeTrun, endTrunNum = endDurTineTrun, 
-           upHp = hp, upDamge = dg, upCritical = critical, damageTakenMultiplier =  damageMultiplier,
-           cardType = cardType, cardIndex = cardIndex, beneficialEffectMultiplier = beneficialEffectMultiplier
-        });
+        upStateGroups[(int)sendUserID].upStateData.Add(upStateData);
         print("버프 임시 저장!");
     }
 
     //데미지 저장
-    public void ReciveUpDamageTemproy(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits, ulong sendUserID)
+    public void ReciveUpDamageTemproy(UserHitDamage userHitDamage, ulong sendUserID)
     {
-        userDamaingChangTemproy[(int)sendUserID].userHitDamages.Add(new UserHitDamage()
-        {
-            targetMonsterID = userId,
-            isTargetEnemy = isForEnemy,
-            startTrunNum = startDurTimeTrun,
-            endTrunNum = endDurTineTrun,
-            hitHp = hp,
-            hitDamge = dg,
-            hitTakenDg = takenDg,
-            numberOfHits = numberOfHits
-        });
-        
+        userDamaingChangTemproy[(int)sendUserID].userHitDamages.Add(userHitDamage);
         print("데미지 임시 저장!");
     }
 
@@ -244,7 +228,6 @@ public class PlayerJobSkill : NetworkBehaviour
         // 적용될 버프의 우선순위 분류 및 적용
         for(int i = 0; i < upStateGroups.Count; i++)
         {
-            List<UpStateData> upStateDatas = new();
             List<float> propertyNum = new();
 
             var validBuffs = upStateGroups.SelectMany(group => group.upStateData)
@@ -256,7 +239,6 @@ public class PlayerJobSkill : NetworkBehaviour
             {
                 print($"Valid Buff for User {i}: HP +{buff.upHp}, Damage +{buff.upDamge}, Critical +{buff.upCritical}, Damage Taken Multiplier +{buff.damageTakenMultiplier}");
                 propertyNum.Add((buff.upHp + buff.upDamge + buff.upCritical + buff.damageTakenMultiplier) / 100f);
-                upStateDatas.Add(buff);  
             }
 
             int propertyNumCount = propertyNum.Count;
@@ -264,21 +246,23 @@ public class PlayerJobSkill : NetworkBehaviour
             {
                 if(!IsOwner) return;
 
-                UpStateData upStateData = new UpStateData(
-                    targetUserID: validBuffs[maxIndex].targetUserID,
-                    startTrunNum: validBuffs[maxIndex].startTrunNum,
-                    endTrunNum: validBuffs[maxIndex].endTrunNum,
-                    upHp: validBuffs[maxIndex].upHp,
-                    upDamge: validBuffs[maxIndex].upDamge,
-                    upCritical: validBuffs[maxIndex].upCritical,
-                    damageTakenMultiplier: validBuffs[maxIndex].damageTakenMultiplier,
-                    beneficialEffectMultiplier: validBuffs[maxIndex].beneficialEffectMultiplier,
-                    cardType: validBuffs[maxIndex].cardType,
-                    cardIndex: validBuffs[maxIndex].cardIndex
-                );
                 float maxValue = propertyNum.Max();
                 int maxIndex = propertyNum.IndexOf(maxValue);
-                player.RequsetUpStateByBuffeServerRpc(upStateData);  
+                UpStateData package = new UpStateData
+                {
+                    targetUserID = validBuffs[maxIndex].targetUserID,
+                    startTrunNum = validBuffs[maxIndex].startTrunNum,
+                    endTrunNum = validBuffs[maxIndex].endTrunNum,
+                    upHp = validBuffs[maxIndex].upHp,
+                    upDamge = validBuffs[maxIndex].upDamge,
+                    upCritical = validBuffs[maxIndex].upCritical,
+                    damageTakenMultiplier = validBuffs[maxIndex].damageTakenMultiplier,
+                    beneficialEffectMultiplier = validBuffs[maxIndex].beneficialEffectMultiplier,
+                    cardType = validBuffs[maxIndex].cardType,
+                    cardIndex = validBuffs[maxIndex].cardIndex
+                };
+                
+                player.RequsetUpStateByBuffeServerRpc(package);  
                 propertyNum.RemoveAt(maxIndex);
                 validBuffs.RemoveAt(maxIndex);
                 print("Success Send Data . . .");
@@ -297,16 +281,16 @@ public class PlayerJobSkill : NetworkBehaviour
                 {
                     if((turnManager.GiveTurnValue() <= userDamaingChangTemproy[i].userHitDamages[j].endTrunNum) || turnManager.GiveTurnValue() == -1)
                     {
-                        UserHitDamage userHitDamage = new UserHitDamage(
-                            targetMonsterID: userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID,
-                            isTargetEnemy: userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy,
-                            startTrunNum: userDamaingChangTemproy[i].userHitDamages[j].startTrunNum,
-                            endTrunNum: userDamaingChangTemproy[i].userHitDamages[j].endTrunNum,
-                            hitHp: userDamaingChangTemproy[i].userHitDamages[j].hitHp,
-                            hitDamge: userDamaingChangTemproy[i].userHitDamages[j].hitDamge,
-                            hitTakenDg: userDamaingChangTemproy[i].userHitDamages[j].hitTakenDg,
-                            numberOfHits: userDamaingChangTemproy[i].userHitDamages[j].numberOfHits
-                        );
+                        UserHitDamage userHitDamage = new UserHitDamage{
+                            targetMonsterID = userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID,
+                            isTargetEnemy = userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy,
+                            startTrunNum = userDamaingChangTemproy[i].userHitDamages[j].startTrunNum,
+                            endTrunNum = userDamaingChangTemproy[i].userHitDamages[j].endTrunNum,
+                            hitHp = userDamaingChangTemproy[i].userHitDamages[j].hitHp,
+                            hitDamge = userDamaingChangTemproy[i].userHitDamages[j].hitDamge,
+                            hitTakenDg = userDamaingChangTemproy[i].userHitDamages[j].hitTakenDg,
+                            numberOfHits = userDamaingChangTemproy[i].userHitDamages[j].numberOfHits
+                        };
                         if(IsOwner)
                             player.RequsetUpDamageServerRpc(userHitDamage);
                     }
@@ -327,14 +311,14 @@ public class PlayerJobSkill : NetworkBehaviour
             player.RequsetHealDataSendServerRpc(userHealData);
     }
     // 힐량 임시 저장
-    public void ReciveUpHealDataTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
+    public void ReciveUpHealDataTemproy(UserHealData healData)
     {
         userHealDataTemproy.Add(new UserHealData()
         {
-            givenUserId = userId,
-            startTrunNum = startDurTimeTrun, 
-            endDurTineTrun = endDurTineTrun,
-            healAmount = healAmount
+            givenUserId = healData.givenUserId,
+            startTrunNum = healData.startTrunNum, 
+            endDurTineTrun = healData.endDurTineTrun,
+            healAmount = healData.healAmount
         });
     }
     // 힐량 보내기
@@ -407,7 +391,7 @@ public class PlayerJobSkill : NetworkBehaviour
                 {
                     if((ulong)i != NetworkManager.Singleton.LocalClientId)
                     {
-                        UpStateForIDUserServerRpc((ulong)i, currentTrun , currentTrun + 3, 0, 0.15f, 0, 1.2f, 0, job, cardIndex);
+                        UpStateByBuffe((ulong)i, currentTrun , currentTrun + 3, 0, 0.15f, 0, 1.2f, 0, job, cardIndex);
                     }
                 }
                 chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);

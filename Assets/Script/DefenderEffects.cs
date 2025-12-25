@@ -4,14 +4,14 @@ public class DefenderCard0Effect : ICardEffect
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
         // 원본: UpStateForIDUser(toUserID, currentTrun, currentTrun + 1, (float)15/100, 0, 0, 0, 0 , job, cardIndex);
-        skillManager.UpStateForIDUserServerRpc(skillManager.toUserID, currentTurn, currentTurn + 1, 0.15f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
+        skillManager.UpStateByBuffe(skillManager.toUserID, currentTurn, currentTurn + 1, 0.15f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
     }
 }
 public class DefenderCard1Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.GiveDamageForIDUserServerRpc(skillManager.toEnemyID, true, currentTurn, currentTurn + 1, 0.10f, 0, 0, 1);
+        skillManager.StoreDamageData(skillManager.toEnemyID, true, currentTurn, currentTurn + 1, 0.10f, 0, 0, 1);
     }
 }
 public class DefenderCard2Effect : ICardEffect
@@ -19,27 +19,27 @@ public class DefenderCard2Effect : ICardEffect
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
         // -1 mean infinite
-        skillManager.UpStateForIDUserServerRpc(skillManager.toUserID, currentTurn, -1, 0.05f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
+        skillManager.UpStateByBuffe(skillManager.toUserID, currentTurn, -1, 0.05f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
     }
 }
 public class DefenderCard3Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.GiveDamageForIDUserServerRpc(skillManager.toEnemyID, true, currentTurn + 1, currentTurn + 2, 0, 0, 0.50f, 1);
+        skillManager.StoreDamageData(skillManager.toEnemyID, true, currentTurn + 1, currentTurn + 2, 0, 0, 0.50f, 1);
     }
 }
 public class DefenderCard4Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.UpStateForIDUserServerRpc(skillManager.toUserID, currentTurn + 1, currentTurn + 2, 0.50f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
+        skillManager.UpStateByBuffe(skillManager.toUserID, currentTurn + 1, currentTurn + 2, 0.50f, 0, 0, 0, 0, skillManager.job, skillManager.cardIndex);
     }
 }
 public class DefenderCard5Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.UpStateForIDUserServerRpc(skillManager.toUserID, currentTurn, currentTurn + 3, 0, 0, 0, 0.2f, 0, skillManager.job, skillManager.cardIndex);
+        skillManager.UpStateByBuffe(skillManager.toUserID, currentTurn, currentTurn + 3, 0, 0, 0, 0.2f, 0, skillManager.job, skillManager.cardIndex);
     }
 }
