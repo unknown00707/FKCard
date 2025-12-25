@@ -110,4 +110,39 @@ public class CardPlayer : NetworkBehaviour
         if(GameManager.Instance != null)
             GameManager.Instance.InCardEffectReady(isReady, OwnerClientId);
     }
+
+    // 게임 카드 정보 저장 발동 관련 -----------------------------------
+
+    [ServerRpc]
+    public void RequsetStoreStateByBuffeServerRpc(UpStateData package)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InStorUserUpStatTemproy(package, OwnerClientId);
+    }
+
+    [ServerRpc]
+    public void RequsetStoreDamageServerRpc(UserHitDamage package)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InStorUserDamageTemproy(package, OwnerClientId);
+    }
+
+    [ServerRpc]
+    public void RequsetUpStateByBuffeServerRpc(UpStateData package)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InUserUpStat(package, OwnerClientId);
+    }
+    [ServerRpc]
+    public void RequsetUpDamageServerRpc(UserHitDamage package)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InDamageToUser(package, OwnerClientId);
+    }
+    [ServerRpc]
+    public void RequsetHealDataSendServerRpc(UserHealData healAmount)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InComeHealTemproy(healAmount);
+    }
 }

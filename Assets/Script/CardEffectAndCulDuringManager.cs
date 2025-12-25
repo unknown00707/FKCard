@@ -96,18 +96,18 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         userTotalStates[(int)userID].currentCritical = userTotalStates[(int)userID].maxCritical;
     }
 
-    public void ReciveUpStatUserByBuffer(float hp, float damage, float critical, float damageMultiplier, float beneficialEffectMultiplier, ulong userID , JobManager.Jobs cardType, int cardIndex) // 증가되는 유저 스텟 저장
+    public void ReciveUpStatUserByBuffer(UpStateData upStateData , ulong sendUserID) // 증가되는 유저 스텟 저장
     {
         print("유저 정보 저장 시작");
         if (userID < (ulong)userChangingState.Count)
         {
             userChangingState[(int)userID] = new UserTime()
             {
-                chaingingHp = userTotalStates[(int)userID].maxHp*hp,
-                chaingingDG = userTotalStates[(int)userID].maxDG*damage,
-                chaingingCritical = critical,
-                damageMultiplier = damageMultiplier,
-                beneficialEffectMultiplier = beneficialEffectMultiplier
+                chaingingHp = userTotalStates[(int)userID].maxHp*upStateData.upHp,
+                chaingingDG = userTotalStates[(int)userID].maxDG*upStateData.upDamge,
+                chaingingCritical = upStateData.upCritical,
+                damageMultiplier = upStateData.damageMultiplier,
+                beneficialEffectMultiplier = upStateData.beneficialEffectMultiplier
             };
             switch(cardType)
             {
@@ -115,7 +115,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                     if(cardIndex == 4)
                     {
                         userChangingState[(int)userID].chaingingHp = 
-                                userAboutDamages[(int)userID].damage[turnManager.GiveTurnValue() -1].inDamage * hp;
+                                userAboutDamages[(int)userID].damage[turnManager.GiveTurnValue() -1].inDamage * upStateData.hp;
                     }
                     break; 
             }

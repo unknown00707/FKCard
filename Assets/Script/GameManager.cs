@@ -186,18 +186,18 @@ public class GameManager : NetworkBehaviour
     }
 
     // 유저의 버프 스텟을 임시 저장
-    public void InStorUserUpStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
+    public void InStorUserUpStatTemproy(UpStateData upStateData ,ulong sendUserID)
     {
         if(!IsServer) return;
 
         print("버프 카드 사용 감지!");
-        playerJobSkill.ReciveUpUserStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier, sendUserID, cardType, cardIndex);
+        playerJobSkill.ReciveUpUserStatTemproy(upStateData, sendUserID);
     }
-    public void InStorUserDamageTemproy(ulong userId, bool isForEnemy, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits, ulong sendUserID)
+    public void InStorUserDamageTemproy(UpStateData upStateData ,ulong sendUserID)
     {
         if(!IsServer) return;
 
-        playerJobSkill.ReciveUpDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits, sendUserID);
+        playerJobSkill.ReciveUpDamageTemproy(upStateData, sendUserID);
     }
     // 유저 스텟 상승 효과 정보 저장
     public void InUserUpStat(float hpIng, float dGing, float criticalIng, float damageMultiplier, float beneficialEffectMultiplier,ulong id, JobManager.Jobs cardType, int cardIndex)

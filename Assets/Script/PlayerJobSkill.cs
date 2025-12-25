@@ -3,8 +3,10 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
+// [System.Serializable] -> 이건 인스펙터용
+// INetworkSerializable -> 이건 네트워크 전송용
 [System.Serializable]
-public class UpStateData
+public class UpStateData : INetworkSerializable
 {
     public ulong targetUserID;
     public int startTrunNum;
@@ -16,6 +18,20 @@ public class UpStateData
     public float beneficialEffectMultiplier;
     public JobManager.Jobs cardType;
     public int cardIndex;
+    // 💡 네트워크 전송 규칙 추가
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref targetUserID);
+        serializer.SerializeValue(ref startTrunNum);
+        serializer.SerializeValue(ref endTrunNum);
+        serializer.SerializeValue(ref upHp);
+        serializer.SerializeValue(ref upDamge);
+        serializer.SerializeValue(ref upCritical);
+        serializer.SerializeValue(ref damageTakenMultiplier);
+        serializer.SerializeValue(ref beneficialEffectMultiplier);
+        serializer.SerializeValue(ref cardType);
+        serializer.SerializeValue(ref cardIndex);
+    }
 }
 [System.Serializable]
 public class UpStateGroup
@@ -23,7 +39,7 @@ public class UpStateGroup
     public List<UpStateData> upStateData = new();
 }
 [System.Serializable]
-public class UserHitDamage
+public class UserHitDamage : INetworkSerializable
 {
     public ulong targetMonsterID;
     public bool isTargetEnemy;
@@ -33,6 +49,18 @@ public class UserHitDamage
     public float hitDamge;
     public float hitTakenDg;
     public int numberOfHits;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref targetMonsterID);
+        serializer.SerializeValue(ref isTargetEnemy);
+        serializer.SerializeValue(ref startTrunNum);
+        serializer.SerializeValue(ref endTrunNum);
+        serializer.SerializeValue(ref hitHp);
+        serializer.SerializeValue(ref hitDamge);
+        serializer.SerializeValue(ref hitTakenDg);
+        serializer.SerializeValue(ref numberOfHits);
+    }
 }
 [System.Serializable]
 public class UserDamaing
@@ -40,12 +68,20 @@ public class UserDamaing
     public List<UserHitDamage> userHitDamages = new();
 }
 [System.Serializable]
-public class UserHealData
+public class UserHealData : INetworkSerializable
 {
     public ulong givenUserId;
     public int startTrunNum;
     public int endDurTineTrun;
     public float healAmount;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref givenUserId);
+        serializer.SerializeValue(ref startTrunNum);
+        serializer.SerializeValue(ref endTrunNum);
+        serializer.SerializeValue(ref healAmount);
+    }
 }
 
 public class PlayerJobSkill : NetworkBehaviour
@@ -133,17 +169,43 @@ public class PlayerJobSkill : NetworkBehaviour
         if(isToPlayer) toUserID = index;
         else toEnemyID = index;
     }
-    [ServerRpc]
-    public void UpStateForIDUserServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
+    public void UpStateByBuffe(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier,JobManager.Jobs cardType, int cardIndex)
     {
         print("버프 임시 저장 보내기!");
-        GameManager.Instance.InStorUserUpStatTemproy(userId, startDurTimeTrun, endDurTineTrun, hp, dg, critical, damageMultiplier, beneficialEffectMultiplier,OwnerClientId, cardType, cardIndex);
+        UpStateData package = new UpStateData
+        {
+            targetUserID = userId,
+            startTrunNum = start,
+            endTrunNum = end,
+            upHp = hp,
+            upDamge = dg,
+            upCritical = cr,
+            damageTakenMultiplier = dm,
+            beneficialEffectMultiplier = be,
+            cardType = job,
+            cardIndex = idx
+        };
+
+        if(IsOwner)
+            player.RequsetStoreStateByBuffeServerRpc(package);
     }
-    [ServerRpc]
-    public void GiveDamageForIDUserServerRpc(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
+    public void StoreDamageData(ulong userId, bool isForEnemy ,int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float takenDg, int numberOfHits)
     {
         print("데미지 임시 저장 보내기!");
-        GameManager.Instance.InStorUserDamageTemproy(userId, isForEnemy, startDurTimeTrun, endDurTineTrun, hp, dg, takenDg, numberOfHits, OwnerClientId);
+        UserHitDamage package = new UserHitDamage
+        {
+            targetMonsterID = userId,
+            isTargetEnemy = isForEnemy,
+            startTrunNum = start,
+            endTrunNum = end,
+            hitHp = hp,
+            hitDamge = dg,
+            hitTakenDg = takenDg,
+            numberOfHits = numberOfHits
+        };
+
+        if(IsOwner)
+            player.RequsetStoreDamageServerRpc(package);
     }
     //버프 임시 저장
     public void ReciveUpUserStatTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float hp, float dg, float critical, float damageMultiplier, float beneficialEffectMultiplier, ulong sendUserID, JobManager.Jobs cardType, int cardIndex)
@@ -176,8 +238,7 @@ public class PlayerJobSkill : NetworkBehaviour
     }
 
     // 버프 데이터 보내기
-    [ServerRpc]
-    public void ReciveUpUserStateByBufferCardServerRpc()
+    public void ReciveUpUserStateByBufferCard()
     {
         print("버프 저장 보내기!");
         // 적용될 버프의 우선순위 분류 및 적용
@@ -185,26 +246,6 @@ public class PlayerJobSkill : NetworkBehaviour
         {
             List<UpStateData> upStateDatas = new();
             List<float> propertyNum = new();
-           
-            // foreach(UpStateData upState in upStateGroups[i].upStateData)
-            // {
-            //     if((int)upState.targetUserID == i)
-            //     {
-            //         if(upState.startTrunNum <= GameManager.Instance.totalTrunNum.Value)
-            //         {
-            //             if((upState.endTrunNum == -1) || (GameManager.Instance.totalTrunNum.Value <= upState.endTrunNum))
-            //             {// -1 mean infinit
-            //                 print("Success Accoes Income Buffe . . .");
-            //                 propertyNum.Add((upState.upHp + upState.upDamge + upState.upCritical + upState.damageTakenMultiplier) / 100);
-            //                 upStateDatas.Add(upState);     
-            //             }
-            //             else 
-            //                 upStateGroups[i].upStateData.Remove(upState);
-            //         }
-            //         else 
-            //             upStateGroups[i].upStateData.Remove(upState);
-            //     }
-            // }
 
             var validBuffs = upStateGroups.SelectMany(group => group.upStateData)
                 .Where(upState => (int)upState.targetUserID == i &&
@@ -218,25 +259,26 @@ public class PlayerJobSkill : NetworkBehaviour
                 upStateDatas.Add(buff);  
             }
 
-            // for(int j = 0; j < propertyNum.Count; j++)
-            // {
-            //     float maxValue = propertyNum.Max();
-            //     int maxIndex = propertyNum.IndexOf(maxValue);
-            //     GameManager.Instance.InUserUpStat(upStateDatas[maxIndex].upHp, upStateDatas[maxIndex].upDamge, 
-            //         upStateDatas[maxIndex].upCritical, upStateDatas[maxIndex].damageTakenMultiplier, upStateDatas[maxIndex].beneficialEffectMultiplier, (ulong)i,
-            //         upStateDatas[maxIndex].cardType, upStateDatas[maxIndex].cardIndex);   
-            //     propertyNum.RemoveAt(maxIndex);
-            //     upStateDatas.RemoveAt(maxIndex);
-            //     print("Success Send Data . . .");
-            // }
             int propertyNumCount = propertyNum.Count;
             for(int j = 0; j < propertyNumCount; j++)
             {
+                if(!IsOwner) return;
+
+                UpStateData upStateData = new UpStateData(
+                    targetUserID: validBuffs[maxIndex].targetUserID,
+                    startTrunNum: validBuffs[maxIndex].startTrunNum,
+                    endTrunNum: validBuffs[maxIndex].endTrunNum,
+                    upHp: validBuffs[maxIndex].upHp,
+                    upDamge: validBuffs[maxIndex].upDamge,
+                    upCritical: validBuffs[maxIndex].upCritical,
+                    damageTakenMultiplier: validBuffs[maxIndex].damageTakenMultiplier,
+                    beneficialEffectMultiplier: validBuffs[maxIndex].beneficialEffectMultiplier,
+                    cardType: validBuffs[maxIndex].cardType,
+                    cardIndex: validBuffs[maxIndex].cardIndex
+                );
                 float maxValue = propertyNum.Max();
                 int maxIndex = propertyNum.IndexOf(maxValue);
-                GameManager.Instance.InUserUpStat(validBuffs[maxIndex].upHp, validBuffs[maxIndex].upDamge, 
-                    validBuffs[maxIndex].upCritical, validBuffs[maxIndex].damageTakenMultiplier, validBuffs[maxIndex].beneficialEffectMultiplier, (ulong)i,
-                    validBuffs[maxIndex].cardType, validBuffs[maxIndex].cardIndex);   
+                player.RequsetUpStateByBuffeServerRpc(upStateData);  
                 propertyNum.RemoveAt(maxIndex);
                 validBuffs.RemoveAt(maxIndex);
                 print("Success Send Data . . .");
@@ -244,8 +286,7 @@ public class PlayerJobSkill : NetworkBehaviour
         }
     }
     // 데미지 저장 보내기
-    [ServerRpc]
-    public void ReciveUpUserDamageServerRpc()
+    public void ReciveUpUserDamage()
     {
         print("데미지 저장 보내기!");
         for(int i = 0; i < userDamaingChangTemproy.Count; i++)
@@ -254,18 +295,36 @@ public class PlayerJobSkill : NetworkBehaviour
             {
                 if(userDamaingChangTemproy[i].userHitDamages[j].startTrunNum <= turnManager.GiveTurnValue())
                 {
-                    if((turnManager.GiveTurnValue() <= userDamaingChangTemproy[i].userHitDamages[j].endTrunNum) || turnManager.GiveTurnValue() == -1) 
-                        GameManager.Instance.InDamageToUser(userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID, userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy, 
-                            OwnerClientId, userDamaingChangTemproy[i].userHitDamages[j].hitHp,userDamaingChangTemproy[i].userHitDamages[j].hitDamge, 
-                            userDamaingChangTemproy[i].userHitDamages[j].hitTakenDg, userDamaingChangTemproy[i].userHitDamages[j].numberOfHits);
+                    if((turnManager.GiveTurnValue() <= userDamaingChangTemproy[i].userHitDamages[j].endTrunNum) || turnManager.GiveTurnValue() == -1)
+                    {
+                        UserHitDamage userHitDamage = new UserHitDamage(
+                            targetMonsterID: userDamaingChangTemproy[i].userHitDamages[j].targetMonsterID,
+                            isTargetEnemy: userDamaingChangTemproy[i].userHitDamages[j].isTargetEnemy,
+                            startTrunNum: userDamaingChangTemproy[i].userHitDamages[j].startTrunNum,
+                            endTrunNum: userDamaingChangTemproy[i].userHitDamages[j].endTrunNum,
+                            hitHp: userDamaingChangTemproy[i].userHitDamages[j].hitHp,
+                            hitDamge: userDamaingChangTemproy[i].userHitDamages[j].hitDamge,
+                            hitTakenDg: userDamaingChangTemproy[i].userHitDamages[j].hitTakenDg,
+                            numberOfHits: userDamaingChangTemproy[i].userHitDamages[j].numberOfHits
+                        );
+                        if(IsOwner)
+                            player.RequsetUpDamageServerRpc(userHitDamage);
+                    }
                 }    
             }
         }
     }
-    [ServerRpc]
-    public void GiveHealToTemproyServerRpc(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
+    public void GiveHealToTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
     {
-        GameManager.Instance.InComeHealTemproy(userId, startDurTimeTrun, endDurTineTrun, healAmount);
+        UserHealData userHealData = new UserHealData()
+        {
+            givenUserId = userId,
+            startTrunNum = startDurTimeTrun,
+            endDurTineTrun = endDurTineTrun,
+            healAmount = healAmount
+        };
+        if(IsOwner)
+            player.RequsetHealDataSendServerRpc(userHealData);
     }
     // 힐량 임시 저장
     public void ReciveUpHealDataTemproy(ulong userId, int startDurTimeTrun, int endDurTineTrun, float healAmount)
