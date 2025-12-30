@@ -420,8 +420,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCardData
   stateCulManager: {fileID: 0}
+  enemyCardDatasByTrun: []
   enemyName: "\uC7A1\uBAB9"
-  enemyHP: 50
+  enemyHP: 175
   enemyDamage: 10
   isBoss: 0
   enemyID: 0

@@ -95,7 +95,7 @@ public class EnemyCulGroup : MonoBehaviour
     {
         foreach(UserDamgeGroup userDamgeGroup in cEACDManager.userAboutDamages)
         {
-            for (int i = userDamgeGroup.damage.Count; i > 0; i--)
+            for (int i = userDamgeGroup.damage.Count  - 1; i >= 0; i--)
             {
                 UserAoubtDamage damageData = userDamgeGroup.damage[i];
                 if (damageData.cuurentTrun != turnManager.GiveTurnValue())
@@ -133,12 +133,12 @@ public class EnemyCulGroup : MonoBehaviour
                     }
 
                     // 5. 공격 횟수를 다 썼으면 리스트에서 영구 삭제
-                    DamageDataRemoveByHitHumber(i);
+                    DamageDataRemoveByHitHumber(userDamgeGroup, damageData, i);
                 }
                 else // 플레이어 대상 (힐/버프 등)
                 {
                     // ... 플레이어 로직 ...
-                    DamageDataRemoveByHitHumber(i);
+                    DamageDataRemoveByHitHumber(userDamgeGroup, damageData,i);
                 }
             }
             print("적에게 데미지 가하기 성공!");
@@ -154,9 +154,9 @@ public class EnemyCulGroup : MonoBehaviour
         }
         return null; // 다 죽음
     }
-    void DamageDataRemoveByHitHumber(int index)
+    void DamageDataRemoveByHitHumber(UserDamgeGroup userDamgeGroup,UserAoubtDamage userAoubtDamage, int index)
     {
-        if (damageData.numberOfHits <= 0 && damageData.cuurentTrun < (turnManager.GiveTurnValue() - NUM_OF_DIFFER_TURN))
+        if (userAoubtDamage.numberOfHits <= 0 && userAoubtDamage.cuurentTrun < (turnManager.GiveTurnValue() - NUM_OF_DIFFER_TURN))
             userDamgeGroup.damage.RemoveAt(index);
     }
 
