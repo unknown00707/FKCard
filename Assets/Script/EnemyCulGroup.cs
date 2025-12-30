@@ -94,7 +94,7 @@ public class EnemyCulGroup : MonoBehaviour
     {
         foreach(UserDamgeGroup userDamgeGroup in cEACDManager.userAboutDamages)
         {
-            for (int i = userDamgeGroup.damage.Count - 1; i >= 0; i--)
+            for (int i = userDamgeGroup.damage.Count; i >= 0; i--)
             {
                 UserAoubtDamage damageData = userDamgeGroup.damage[i];
                 if (damageData.cuurentTrun != turnManager.GiveTurnValue())
@@ -140,7 +140,6 @@ public class EnemyCulGroup : MonoBehaviour
                 else // 플레이어 대상 (힐/버프 등)
                 {
                     // ... 플레이어 로직 ...
-                    userDamgeGroup.damage.RemoveAt(i); // 처리 후 삭제
                 }
             }
             print("적에게 데미지 가하기 성공!");
