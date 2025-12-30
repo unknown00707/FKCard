@@ -133,6 +133,7 @@ public class GameManager : NetworkBehaviour
     private void InGameStartSignClientRpc()
     {
         print("ClineRpc: 모든 클라이언트 게임 시작!");
+        GameSetUIManager.instance.CloseSettingsPanel();
         jobManager.RequestGameStartSign();
     }
 

@@ -18,11 +18,32 @@ public class GameSetUIManager : MonoBehaviour
         {
             Destroy(this);
         }
-    }
 
-    // Update is called once per frame
+        CloseSettingsPanel();
+    }
+    
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (settingsPanel.activeSelf)
+            {
+                CloseSettingsPanel();
+            }
+            else
+            {
+                OpenSettingsPanel();
+            }
+        }
+    }
+
+    public void OpenSettingsPanel()
+    {
+        settingsPanel.SetActive(true);
+    }
+
+    public void CloseSettingsPanel()
+    {
+        settingsPanel.SetActive(false);
     }
 }
