@@ -17,6 +17,7 @@ public class EnemyCulGroup : MonoBehaviour
     public Button[] enemyPrefabs;
     public TextMeshProUGUI totalHP;
     public TextMeshProUGUI totalDG;
+    public int NUM_OF_DIFFER_TURN = 6;
     [Header("Monster")]
     public List<EnemyMonster> stageMonsters;
     public Dictionary<int, EnemyCardData> activeMonsterDic = new();
@@ -94,7 +95,7 @@ public class EnemyCulGroup : MonoBehaviour
     {
         foreach(UserDamgeGroup userDamgeGroup in cEACDManager.userAboutDamages)
         {
-            for (int i = userDamgeGroup.damage.Count; i >= 0; i--)
+            for (int i = userDamgeGroup.damage.Count; i > 0; i--)
             {
                 UserAoubtDamage damageData = userDamgeGroup.damage[i];
                 if (damageData.cuurentTrun != turnManager.GiveTurnValue())
@@ -126,20 +127,18 @@ public class EnemyCulGroup : MonoBehaviour
                         float totalDmg = damageData.hitHpDamage + damageData.hitDGDamage + damageData.hitTakenDamage;
                         targetEnemy.enemyHP -= totalDmg;
                         // 공격 횟수 차감
+                        Debug.Log($"공격! 남은 횟수: {damageData.numberOfHits}, 적 HP: {targetEnemy.enemyHP}");
                         damageData.numberOfHits--;
                         
-                        Debug.Log($"공격! 남은 횟수: {damageData.numberOfHits}, 적 HP: {targetEnemy.enemyHP}");
                     }
 
                     // 5. 공격 횟수를 다 썼으면 리스트에서 영구 삭제
-                    if (damageData.numberOfHits <= 0)
-                    {
-                        userDamgeGroup.damage.RemoveAt(i);
-                    }
+                    DamageDataRemoveByHitHumber(i);
                 }
                 else // 플레이어 대상 (힐/버프 등)
                 {
                     // ... 플레이어 로직 ...
+                    DamageDataRemoveByHitHumber(i);
                 }
             }
             print("적에게 데미지 가하기 성공!");
@@ -154,5 +153,15 @@ public class EnemyCulGroup : MonoBehaviour
                 return keyValue;
         }
         return null; // 다 죽음
+    }
+    void DamageDataRemoveByHitHumber(int index)
+    {
+        if (damageData.numberOfHits <= 0 && damageData.cuurentTrun < (turnManager.GiveTurnValue() - NUM_OF_DIFFER_TURN))
+            userDamgeGroup.damage.RemoveAt(index);
+    }
+
+    public void MonsterDieCheck()
+    {
+        activeMonsterDic.Clear();
     }
 }
