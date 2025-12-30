@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UI;
 [System.Serializable]
@@ -140,10 +141,6 @@ public class EnemyCulGroup : MonoBehaviour
         }
         print("적에게 데미지 가하기 성공!");
         MonsterDieCheck();
-        foreach (var enemy in enemyPrefabs.Where(e => e.gameObject.activeInHierarchy))
-        {
-            Debug.Log($"적 ID: {enemy.Key}, 남은 HP: {enemy.Value.enemyHP}");
-        }
     }
     // 살아있는 아무 몬스터나 찾는 함수 (공격 전이용)
     EnemyCardData FindAliveEnemy()
@@ -163,11 +160,17 @@ public class EnemyCulGroup : MonoBehaviour
 
     public void MonsterDieCheck()
     {
-        activeMonsterDic.RemoveWhere(kv => kv.Value.enemyHP <= 0);
+        var targetDic = activeMonsterDic.Where(data => data.Value.enemyHP <= 0)
+            .Select(data => data.Key)
+            .ToList();
+        foreach(var target in targetDic)
+        {
+            activeMonsterDic.Remove(target);
+        }
         enemyPrefabs.ToList().ForEach(btn =>
         {
             if (activeMonsterDic.ContainsValue(btn.GetComponent<EnemyCardData>()))
-                break;
+                return;
             btn.gameObject.SetActive(false);
         });
         MakeSameTotalState();
