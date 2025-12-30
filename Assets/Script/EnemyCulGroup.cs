@@ -68,7 +68,7 @@ public class EnemyCulGroup : MonoBehaviour
             textpro[0].text = prefabData.enemyHP.ToString();
             textpro[1].text = prefabData.enemyDamage.ToString();
 
-            activeMonsterDic.Add(i, enemyCardData);
+            activeMonsterDic.Add(i, prefabData);
         }
     }
 
@@ -77,14 +77,10 @@ public class EnemyCulGroup : MonoBehaviour
         float hp = 0;
         float dg = 0;
 
-        foreach(Button btn in enemyPrefabs)
+        foreach( EnemyCardData value in activeMonsterDic.Values)
         {
-            if(btn.gameObject.activeInHierarchy)
-            {
-                EnemyCardData enemyCardData = btn.GetComponent<EnemyCardData>();
-                hp += enemyCardData.enemyHP;
-                dg += enemyCardData.enemyDamage;
-            }
+            hp += value.enemyHP;
+            dg += value.enemyDamage;
         }
 
         totalHP.text = hp.ToString();
@@ -141,7 +137,12 @@ public class EnemyCulGroup : MonoBehaviour
                     DamageDataRemoveByHitHumber(userDamgeGroup, damageData,i);
                 }
             }
-            print("적에게 데미지 가하기 성공!");
+        }
+        print("적에게 데미지 가하기 성공!");
+        MonsterDieCheck();
+        foreach (var enemy in enemyPrefabs.Where(e => e.gameObject.activeInHierarchy))
+        {
+            Debug.Log($"적 ID: {enemy.Key}, 남은 HP: {enemy.Value.enemyHP}");
         }
     }
     // 살아있는 아무 몬스터나 찾는 함수 (공격 전이용)
@@ -162,6 +163,13 @@ public class EnemyCulGroup : MonoBehaviour
 
     public void MonsterDieCheck()
     {
-        activeMonsterDic.Clear();
+        activeMonsterDic.RemoveWhere(kv => kv.Value.enemyHP <= 0);
+        enemyPrefabs.ToList().ForEach(btn =>
+        {
+            if (activeMonsterDic.ContainsValue(btn.GetComponent<EnemyCardData>()))
+                break;
+            btn.gameObject.SetActive(false);
+        });
+        MakeSameTotalState();
     }
 }
