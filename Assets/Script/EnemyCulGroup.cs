@@ -132,8 +132,9 @@ public class EnemyCulGroup : MonoBehaviour
                     // 5. 공격 횟수를 다 썼으면 리스트에서 영구 삭제
                     DamageDataRemoveByHitHumber(userDamgeGroup, damageData, i);
                 }
-                else // 플레이어 대상 (힐/버프 등)
+                else // 플레이어 대상 (자해 / 팀 공격 등)
                 {
+                    cEACDManager.RequsetDownUserCurrentStatFromDamage(damageData);
                     // ... 플레이어 로직 ...
                     DamageDataRemoveByHitHumber(userDamgeGroup, damageData,i);
                 }

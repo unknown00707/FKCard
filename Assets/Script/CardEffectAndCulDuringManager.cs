@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 [System.Serializable]
@@ -119,20 +120,29 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                     }
                     break; 
             }
-            UpStatUserCurentTates();
+            UpStatUserCurentTates((int)upStateData.targetUserID);
         }
     }
-    void UpStatUserCurentTates() // 증가된 유저의 스텟을 최종 스텟에 업데이트
+    void UpStatUserCurentTates(int targetUserID) // 증가된 유저의 스텟을 "최종(max)" 스텟에 업데이트 != "현재 스텟 변화 x !!"
     {
-        for(int i = 0; i < userTotalStates.Count; i++)
-        {
-            userTotalStates[i].beneficialEffectMultiplier += userChangingState[i].beneficialEffectMultiplier;
-            userTotalStates[i].maxHp += userChangingState[i].chaingingHp * userTotalStates[i].beneficialEffectMultiplier;
-            userTotalStates[i].maxDG += userChangingState[i].chaingingDG * userTotalStates[i].beneficialEffectMultiplier;
-            userTotalStates[i].maxCritical += userChangingState[i].chaingingCritical * userTotalStates[i].beneficialEffectMultiplier;
-            userTotalStates[i].damageMultiplier += userChangingState[i].damageMultiplier * userTotalStates[i].beneficialEffectMultiplier;
-            print("유저 정보 : " + i + " 업데이트 성공");
-        }
+        userTotalStates[targetUserID].beneficialEffectMultiplier += userChangingState[targetUserID].beneficialEffectMultiplier; // 이로운 효과 먼저 계산 필수
+        
+        float userChangingHp = userChangingState[targetUserID].chaingingHp * userTotalStates[targetUserID].beneficialEffectMultiplier;
+        float userChangingDG = userChangingState[targetUserID].chaingingDG * userTotalStates[targetUserID].beneficialEffectMultiplier;
+        float userChangingCritical = userChangingState[targetUserID].chaingingCritical * userTotalStates[targetUserID].beneficialEffectMultiplier;
+        float userChangingDamageMultiplier = userChangingState[targetUserID].damageMultiplier * userTotalStates[targetUserID].beneficialEffectMultiplier;
+
+        userTotalStates[targetUserID].maxHp += userChangingHp;
+        userTotalStates[targetUserID].maxDG += userChangingDG;
+        userTotalStates[targetUserID].maxCritical += userChangingCritical;
+        userTotalStates[targetUserID].damageMultiplier += userChangingDamageMultiplier;
+        
+        // 최대 스텟이 증가된 만큼 현재 스텟도 같은 양 만큼 (같은 비율로 만들기 위해서) 증가
+        userTotalStates[targetUserID].currentHp += userChangingHp;
+        userTotalStates[targetUserID].currentDG += userChangingDG;
+        userTotalStates[targetUserID].currentCritical += userChangingCritical;
+        print("유저 정보 : " + targetUserID + " 업데이트 성공");
+        
     }
     public void ReciveDamageDataFromTemproy(UserHitDamage package, ulong sendUserID) // 데미지 임시 저장 -- > 이를 통해서 분류 
     {
@@ -149,45 +159,45 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         };
         
 
-        ReciveCardEffectDamage();
+        ReciveCardEffectDamage((int)sendUserID);
     }
-    public void ReciveCardEffectDamage() // 데미지 정보 저장 -- 준 피해
+    public void ReciveCardEffectDamage(int sendUserID) // 데미지 정보 저장 -- 준 피해
     {
         int currentTurn = turnManager.GiveTurnValue();
-        for(int i = 0; i < userAboutDamages.Count; i++) // 가할 데미지 저장
-        {
+        // for(int i = 0; i < userAboutDamages.Count; i++) // 가할 데미지 저장
+        // {
             float prevTakenDamage = 0f; // 기본값은 0
             int prevIndex = currentTurn - 1;
             // 이전 턴 인덱스가 0보다 크거나 같고, 실제로 리스트에 데이터가 존재할 때만 가져옴
-            if (prevIndex >= 0 && prevIndex < userAboutDamages[i].damage.Count)
+            if (prevIndex >= 0 && prevIndex < userAboutDamages[sendUserID].damage.Count)
             {
-                prevTakenDamage = userAboutDamages[i].damage[prevIndex].hitTakenDamage;
+                prevTakenDamage = userAboutDamages[sendUserID].damage[prevIndex].hitTakenDamage;
             }
-            else if (userAboutDamages[i].damage.Count > 0)
+            else if (userAboutDamages[sendUserID].damage.Count > 0)
             {
                 // (선택 사항) 만약 턴 계산이 꼬여서 인덱스가 안 맞더라도, 데이터가 있다면 마지막 데이터를 가져오는 안전장치
-                prevTakenDamage = userAboutDamages[i].damage[^1].hitTakenDamage;
+                prevTakenDamage = userAboutDamages[sendUserID].damage[^1].hitTakenDamage;
             }
-            userAboutDamages[i].damage.Add(new UserAoubtDamage()
+            userAboutDamages[sendUserID].damage.Add(new UserAoubtDamage()
             {
-                targetMonsterID = userDamaingChangs[i].targetMonsterID,
-                isTargetEnemy = userDamaingChangs[i].isTargetEnemy,
-                hitHpDamage = userTotalStates[i].maxHp * userDamaingChangs[i].chaningDamaingForHp,
-                hitDGDamage = userTotalStates[i].maxDG * userDamaingChangs[i].chaningDamaingForDamage,
-                hitTakenDamage = prevTakenDamage * userDamaingChangs[i].chaningDamaingForTakenDamage,
-                numberOfHits = userDamaingChangs[i].numberOfHits,
+                targetMonsterID = userDamaingChangs[sendUserID].targetMonsterID,
+                isTargetEnemy = userDamaingChangs[sendUserID].isTargetEnemy,
+                hitHpDamage = userTotalStates[sendUserID].maxHp * userDamaingChangs[sendUserID].chaningDamaingForHp,
+                hitDGDamage = userTotalStates[sendUserID].maxDG * userDamaingChangs[sendUserID].chaningDamaingForDamage,
+                hitTakenDamage = prevTakenDamage * userDamaingChangs[sendUserID].chaningDamaingForTakenDamage,
+                numberOfHits = userDamaingChangs[sendUserID].numberOfHits,
                 cuurentTrun = currentTurn
             });
 
-            bool isCritical = CheckCriticalSuccess(i);
+            bool isCritical = CheckCriticalSuccess(sendUserID);
             if(isCritical)
             {
-                int lastIndex = userAboutDamages[i].damage.Count - 1;
-                userAboutDamages[i].damage[lastIndex].hitHpDamage *= ciriticalMultiplier;
-                userAboutDamages[i].damage[lastIndex].hitDGDamage *= ciriticalMultiplier;
-                userAboutDamages[i].damage[lastIndex].hitTakenDamage *= ciriticalMultiplier;
+                int lastIndex = userAboutDamages[sendUserID].damage.Count - 1;
+                userAboutDamages[sendUserID].damage[lastIndex].hitHpDamage *= ciriticalMultiplier;
+                userAboutDamages[sendUserID].damage[lastIndex].hitDGDamage *= ciriticalMultiplier;
+                userAboutDamages[sendUserID].damage[lastIndex].hitTakenDamage *= ciriticalMultiplier;
             }
-        }
+        // }
 
         print("데미지저장 성공");
     }
@@ -198,6 +208,14 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         if (randomValue <= successProbability)
             return true;
         return false;
+    }
+
+    public void RequsetDownUserCurrentStatFromDamage(UserAoubtDamage givenDamge)
+    {
+        int targetUserID = (int)givenDamge.targetMonsterID;
+        float totalDamage = givenDamge.hitHpDamage + givenDamge.hitDGDamage;
+        userTotalStates[targetUserID].currentHp -= totalDamage * userTotalStates[targetUserID].damageMultiplier;
+        givenDamge.inDamage = totalDamage;
     }
 
     public void ReciveHealData(ulong userId, float healAmount)
