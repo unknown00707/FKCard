@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class TurnManager : NetworkBehaviour
 {
+    public EnemyCulGroup enemyCulGroup;
     public NetworkVariable<int> totalTrunNum = new();
     public NetworkVariable<bool> isPlayerTrun = new();
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -38,5 +39,17 @@ public class TurnManager : NetworkBehaviour
     public int GiveTurnValue()
     {
         return totalTrunNum.Value;
+    }
+    public void CheckTurnNumForWhoseTurn()
+    {
+        if(totalTrunNum.Value % 2 == 0)
+        {
+            print("플레이어 턴입니다.");
+        }
+        else
+        {
+            print("몬스터 턴입니다.");
+            enemyCulGroup.AttackAllEnemyCulOnStage();
+        }
     }
 }

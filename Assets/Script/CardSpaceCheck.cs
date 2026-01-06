@@ -60,12 +60,16 @@ public class CardSpaceCheck : MonoBehaviour
             stateCulManager.CardSearchMatch();
             
             print("턴 넘길 준비!");
-            StopCoroutine(runningCoroutine);
+            StopACoroutine();
         }
     }
     public void StartACoroutine()
     {
         runningCoroutine = StartCoroutine(WaitTenForCardOn());
+    }
+    public void StopACoroutine()
+    {
+        StopCoroutine(runningCoroutine);
     }
     private IEnumerator WaitTenForCardOn()
     {

@@ -184,6 +184,7 @@ public class GameManager : NetworkBehaviour
         turnManager.ChangeTurnBoolValue(); // 턴 넘어갈 타이밍 , 보스/몬스터 턴
         stageManager.ReciveSignToChangeTrun();
         turnManager.ChangeTurnNumValue();
+        turnManager.CheckTurnNumForWhoseTurn();
     }
 
     // 유저의 버프 스텟을 임시 저장

@@ -176,4 +176,9 @@ public class EnemyCulGroup : MonoBehaviour
         });
         MakeSameTotalState();
     }
+    public void AttackAllEnemyCulOnStage()
+    {
+        
+        print("모든 몬스터가 플레이어에게 데미지 주기 성공!");
+    }
 }

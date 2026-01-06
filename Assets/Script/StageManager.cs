@@ -67,7 +67,8 @@ public class StageManager : NetworkBehaviour
             print("플레이어 턴!");
         yield return new WaitForSecondsRealtime(5f);
 
-        cardSpaceCheck.CardSpacePrefabsInit(isPlayerTrun); // 몬스터 턴
+        cardSpaceCheck.CardSpacePrefabsInit(isPlayerTrun); // 카드 초기 상태로 변경
+
         print("턴 효과 적용 완료!");
     }
 }
