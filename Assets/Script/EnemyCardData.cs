@@ -16,6 +16,7 @@ public class EnemyCardData : MonoBehaviour
     public float enemyDamage = 70;
     public bool isBoss;
     public int enemyID;
+    public int[] useSkillNums;
     public Sprite img;
     public string ep;
     

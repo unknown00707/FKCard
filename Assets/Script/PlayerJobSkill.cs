@@ -354,7 +354,7 @@ public class PlayerJobSkill : NetworkBehaviour
     }
     public void DefenderSkills(int index)
     {
-         int currentTrun = turnManager.GiveTurnValue();
+        int currentTrun = turnManager.GiveTurnValue();
         switch(index)
         {
             case 0:

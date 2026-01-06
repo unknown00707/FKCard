@@ -8,7 +8,6 @@ public class StageManager : NetworkBehaviour
     public TurnManager turnManager;
     public NetworkVariable<int> stageNum = new(); // 스테이지 큰 수
     public NetworkVariable<int> sideStageNum = new(); // 스테이지 작은 수
-    public NetworkVariable<int> currentStageNum = new();
     public EnemyCulGroup enemyCulGroup;
     public CardSpaceCheck cardSpaceCheck;
 
@@ -17,7 +16,6 @@ public class StageManager : NetworkBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Init()
     {
-        currentStageNum.Value = 0;
         stageNum.Value = 0;
         sideStageNum.Value = 0;
 
@@ -33,7 +31,6 @@ public class StageManager : NetworkBehaviour
     }
     public void DisposeFounction()
     {
-        currentStageNum?.Dispose();
         stageNum?.Dispose();
         sideStageNum?.Dispose();
     }
@@ -70,5 +67,9 @@ public class StageManager : NetworkBehaviour
         cardSpaceCheck.CardSpacePrefabsInit(isPlayerTrun); // 카드 초기 상태로 변경
 
         print("턴 효과 적용 완료!");
+    }
+    public int GiveStageNum()
+    {
+        return stageNum.Value;
     }
 }

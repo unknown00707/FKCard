@@ -14,6 +14,7 @@ public class EnemyCulGroup : MonoBehaviour
 {
     public StateCulManager stateCulManager;
     public CardEffectAndCulDuringManager cEACDManager;
+    public StageManager stageManager;
     public TurnManager turnManager;
     public Button[] enemyPrefabs;
     public TextMeshProUGUI totalHP;
@@ -22,6 +23,8 @@ public class EnemyCulGroup : MonoBehaviour
     [Header("Monster")]
     public List<EnemyMonster> stageMonsters;
     public Dictionary<int, EnemyCardData> activeMonsterDic = new();
+    private Dictionary<int, IMonasterEffect> monsterCardEffects; // current stage Num , monster index / current turn
+    private Dictionary<(int, int), bool> mostserCheckUseSpecailSkill = new();
     [Header("Boss")]
     public Button[] stageBoss;
 
@@ -36,6 +39,20 @@ public class EnemyCulGroup : MonoBehaviour
     void Update()
     {
         
+    }
+
+    private void InitializeCardEffects()
+    {
+        monsterCardEffects = new Dictionary<int, IMonasterEffect>
+        {
+            // 잡몹의 스킬들
+            { 0, new Biting() },
+            { 1, new Biting() },
+            { 2, new Biting() },
+            { 3, new Biting() },
+            { 4, new Biting() },
+            { 5, new Biting() },
+        };
     }
 
     int RanMonsterGetValue(int stageNum)
@@ -61,6 +78,7 @@ public class EnemyCulGroup : MonoBehaviour
             prefabData.enemyDamage = enemyCardData.enemyDamage;
             prefabData.isBoss = enemyCardData.isBoss;
             prefabData.enemyID = enemyCardData.enemyID;
+            prefabData.useSkillNums = enemyCardData.useSkillNums;
             prefabData.img = enemyCardData.img;
             prefabData.ep = enemyCardData.ep;
             enemyPrefabs[i].image.sprite = prefabData.img;
@@ -178,7 +196,48 @@ public class EnemyCulGroup : MonoBehaviour
     }
     public void AttackAllEnemyCulOnStage()
     {
+        int currentTurn = turnManager.GiveTurnValue();
+        for(int i = 0; i < activeMonsterDic.Count; i++)
+        {
+            // Dictionary에서 해당 직업/카드의 효과를 찾아서 실행
+            if (monsterCardEffects.TryGetValue(RandomSkillVAlue(i), out IMonasterEffect effect))
+            {
+                effect.ApplyEffect(this, currentTurn);
+            }
+            else
+            {
+                Debug.LogWarning($"아직 구현되지 않은 카드 효과입니다: {stageManager.GiveStageNum()}, Index: {0}");
+            }    
+        }
+        
         
         print("모든 몬스터가 플레이어에게 데미지 주기 성공!");
+    }
+
+    int RandomSkillVAlue(int targetID)
+    {
+        int enemyCardIndex = activeMonsterDic[targetID].enemyID;
+        int ranValue = Random.Range(0, activeMonsterDic[targetID].useSkillNums.Count());
+        int useSkillNum = activeMonsterDic[targetID].useSkillNums[ranValue];
+        if(mostserCheckUseSpecailSkill.TryGetValue((enemyCardIndex, useSkillNum),  out bool isUsed))
+        {
+            if(isUsed)
+            {
+                int postRanValue = ranValue;
+                while(postRanValue == ranValue)
+                {
+                    ranValue = Random.Range(0, activeMonsterDic[targetID].useSkillNums.Count());
+                }
+                useSkillNum = activeMonsterDic[targetID].useSkillNums[ranValue];
+                mostserCheckUseSpecailSkill.Add((enemyCardIndex, useSkillNum), true);
+            }
+            else
+                mostserCheckUseSpecailSkill.Add((enemyCardIndex, useSkillNum), true);
+        }
+        else
+        {
+            mostserCheckUseSpecailSkill.Add((enemyCardIndex, useSkillNum), true); // 스킬 사용했다는 걸 표시
+        }
+        return  useSkillNum;
     }
 }
