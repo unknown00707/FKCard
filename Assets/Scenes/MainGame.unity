@@ -4350,13 +4350,13 @@ MonoBehaviour:
   userJobState: 6
   jobIcons:
   - {fileID: -7369115237319085530, guid: 61b60957154512c44acc6b014030ce12, type: 3}
+  - {fileID: -7105671666280380097, guid: 1194ce5633461ad4e958fe642be470b3, type: 3}
   - {fileID: 1892511071537953791, guid: f5ee5c53d7040bf4d9cf837436ef83c2, type: 3}
-  - {fileID: -7369115237319085530, guid: 61b60957154512c44acc6b014030ce12, type: 3}
-  - {fileID: 1892511071537953791, guid: f5ee5c53d7040bf4d9cf837436ef83c2, type: 3}
-  - {fileID: -7369115237319085530, guid: 61b60957154512c44acc6b014030ce12, type: 3}
-  - {fileID: 1892511071537953791, guid: f5ee5c53d7040bf4d9cf837436ef83c2, type: 3}
-  - {fileID: -7369115237319085530, guid: 61b60957154512c44acc6b014030ce12, type: 3}
-  - {fileID: -554228220992780781, guid: 23d4d038ae7080b4681b2c448f47843c, type: 3}
+  - {fileID: -4520639879736543923, guid: 38c05d7ae9e52cc46a70c2c5f82fc705, type: 3}
+  - {fileID: 2614670459063452920, guid: 771210b52da2b0b4c9ee68e2c57a9e59, type: 3}
+  - {fileID: 590812335324526437, guid: f01e0f0096a130b45bf6ecf84f63d97c, type: 3}
+  - {fileID: -2776249350635231918, guid: b712e91b6730c1e49bd8751edebf251a, type: 3}
+  - {fileID: 6956139468802122394, guid: 7f5d5bb6aad839844b451f5394574aaa, type: 3}
 --- !u!1 &924058681
 GameObject:
   m_ObjectHideFlags: 0
@@ -5399,6 +5399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCulGroup
   stateCulManager: {fileID: 2092390122}
   cEACDManager: {fileID: 1054227398}
+  stageManager: {fileID: 1432208274}
   turnManager: {fileID: 1421212752}
   enemyPrefabs:
   - {fileID: 2585387887225930279}
@@ -6616,6 +6617,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnManager
   ShowTopMostFoldoutHeaderGroup: 1
+  enemyCulGroup: {fileID: 1148699780}
   totalTrunNum:
     m_InternalValue: 0
   isPlayerTrun:
@@ -6670,8 +6672,6 @@ MonoBehaviour:
   stageNum:
     m_InternalValue: 0
   sideStageNum:
-    m_InternalValue: 0
-  currentStageNum:
     m_InternalValue: 0
   enemyCulGroup: {fileID: 1148699780}
   cardSpaceCheck: {fileID: 1392324696}
@@ -9353,6 +9353,7 @@ MonoBehaviour:
   enemyDamage: 0
   isBoss: 0
   enemyID: 0
+  useSkillNums: 
   img: {fileID: 0}
   ep: 
 --- !u!224 &318820984986700921
@@ -12615,6 +12616,7 @@ MonoBehaviour:
   enemyDamage: 70
   isBoss: 0
   enemyID: 0
+  useSkillNums: 
   img: {fileID: 0}
   ep: 
 --- !u!114 &8232639465956481476
@@ -12712,6 +12714,7 @@ MonoBehaviour:
   enemyDamage: 70
   isBoss: 0
   enemyID: 0
+  useSkillNums: 
   img: {fileID: 0}
   ep: 
 --- !u!114 &8953087289049943978
