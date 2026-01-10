@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,8 +7,9 @@ public class TurnManager : NetworkBehaviour
     public EnemyCulGroup enemyCulGroup;
     public NetworkVariable<int> totalTrunNum = new();
     public NetworkVariable<bool> isPlayerTrun = new();
-    public Networklist<bool> canActivePlayer = new();
-    public Networklist<int> canActivePlayerTurnNum = new();
+    public NetworkList<bool> canActivePlayer = new();
+    public NetworkList<int> canActivePlayerTurnNum = new();
+    CardPlayer player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Init()
     {
@@ -26,7 +28,13 @@ public class TurnManager : NetworkBehaviour
         totalTrunNum.OnValueChanged += OnTotalTurnNumChanged;
         isPlayerTrun.OnValueChanged += OnPlayerTrunIsOn;
     }
-
+    void Update()
+    {
+        if (player == null && NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+        }
+    }
     // Update is called once per frame
     public void DisInit()
     {
@@ -61,28 +69,28 @@ public class TurnManager : NetworkBehaviour
 
     public bool GiveAblePlayerBoolValue(int userId)
     {
-        return canActivePlayer[userId].value;
+        return canActivePlayer[userId];
     }
     public void SetAblePlayerBoolValue(int userId)
     {
-        canActivePlayer[userId].value = !canActivePlayer[userId];
+        canActivePlayer[userId] = !canActivePlayer[userId];
     }
     public void RequsetDelayAblePlayerTurnNum(int delayTime, int userId)
     {
-        canActivePlayerTurnNum[userId].value = delayTime + totalTrunNum.Value;
+        canActivePlayerTurnNum[userId] = delayTime + totalTrunNum.Value;
         ComparisonAblePlayer();
     }
     public void ComparisonAblePlayer()
     {
-        for(int i = 0; i < GameManager.instance.SendPlayerTotalNum(); i++)
+        for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
-            if(canActivePlayerTurnNum[i].value > totalTrunNum.Value)
+            if(canActivePlayerTurnNum[i] > totalTrunNum.Value)
             {
-                canActivePlayer[i].value = false;
+                canActivePlayer[i] = false;
             }
             else
             {
-                canActivePlayer[i].value = true;
+                canActivePlayer[i] = true;
             }
         }
     }
@@ -97,5 +105,9 @@ public class TurnManager : NetworkBehaviour
             print("몬스터 턴입니다.");
             enemyCulGroup.AttackAllEnemyCulOnStage();
         }
+    }
+    public void RequsetDelayTurn(int delayTime)
+    {
+        player.RequsetDelayForNextTurn(delayTime);
     }
 }

@@ -17,6 +17,7 @@ public class CardSpaceCheck : MonoBehaviour
     public bool isOkToGoInFC = true; // 들어갈 공간이 없다
     public Coroutine runningCoroutine;
     CardPlayer player;
+    int userID;
     private string initName;
     void Awake()
     {
@@ -29,15 +30,17 @@ public class CardSpaceCheck : MonoBehaviour
         
         if (player == null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
         {
+            userID = (int)NetworkManager.Singleton.LocalClientId;
             player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
-            initName = cardPrefabs[NetworkManager.Singleton.LocalClientId].name;
+            initName = cardPrefabs[userID].name;
+            
             CardSpacePrefabsInit(true);
         }
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(!turnManager.GiveAblePlayerBoolValue(NetworkManager.Singleton.LocalClientId)) return; 
+        if(!turnManager.GiveAblePlayerBoolValue((int)NetworkManager.Singleton.LocalClientId)) return; 
 
         if(collision.gameObject.CompareTag("Card"))
         {
@@ -70,10 +73,10 @@ public class CardSpaceCheck : MonoBehaviour
     {
         print("카드 내기 대기..!");
         yield return _waitForSecondsRealtime10;
-        if(turnManager.GiveAblePlayerBoolValue(NetworkManager.Singleton.LocalClientId))
+        if(turnManager.GiveAblePlayerBoolValue(userID))
             player.RequsetUseCardSignal();
         print("카드 강제로 냄!");
-        player.ReciveSignCardEffectReady(turnManager.GiveAblePlayerBoolValue(NetworkManager.Singleton.LocalClientId));
+        player.ReciveSignCardEffectReady(turnManager.GiveAblePlayerBoolValue(userID));
     }
     public void CardSpacePrefabsInit(bool isFrist)
     {
