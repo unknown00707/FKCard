@@ -33,16 +33,11 @@ public class CardSpaceCheck : MonoBehaviour
             initName = cardPrefabs[NetworkManager.Singleton.LocalClientId].name;
             CardSpacePrefabsInit(true);
         }
-        
-        if((cardPrefabs[NetworkManager.Singleton.LocalClientId].name == initName) && isOkToGoInFC)
-            isOkToGoInFC = true;
-        else
-            isOkToGoInFC = false;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(!isOkToGoInFC) return; 
+        if(!turnManager.GiveAblePlayerBoolValue(NetworkManager.Singleton.LocalClientId)) return; 
 
         if(collision.gameObject.CompareTag("Card"))
         {
@@ -54,7 +49,7 @@ public class CardSpaceCheck : MonoBehaviour
             stateCulManager.playerEmptyObjs.Remove(collision.GetComponent<Button>());
             collision.transform.SetParent(stateCulManager.transform);
 
-            isOkToGoInFC = false;
+            player.RequsetUseCardSignal();
             // 카드 효과 저장 함수 발동
             print("카드 발동!");
             stateCulManager.CardSearchMatch();
@@ -75,9 +70,10 @@ public class CardSpaceCheck : MonoBehaviour
     {
         print("카드 내기 대기..!");
         yield return _waitForSecondsRealtime10;
-        isOkToGoInFC = false; // -> 카드 내기 실패!
+        if(turnManager.GiveAblePlayerBoolValue(NetworkManager.Singleton.LocalClientId))
+            player.RequsetUseCardSignal();
         print("카드 강제로 냄!");
-        player.ReciveSignCardEffectReady(isOkToGoInFC);
+        player.ReciveSignCardEffectReady(turnManager.GiveAblePlayerBoolValue(NetworkManager.Singleton.LocalClientId));
     }
     public void CardSpacePrefabsInit(bool isFrist)
     {
@@ -88,19 +84,6 @@ public class CardSpaceCheck : MonoBehaviour
 
             obj.SetActive(false);
         }
-    }
-    public void WaitToPrivateAblieTrunFC(int correspondingTurn)
-    {
-        print("턴 이용 불가 코루틴 실행 ! - !");
-        StartCoroutine(WaitToPrivateAblieTrun(correspondingTurn));
-    }
-    private IEnumerator WaitToPrivateAblieTrun(int correspondingTurn)
-    {  
-        print("턴 진행 불가!!");
-        isOkToGoInFC = false;
-        yield return new WaitUntil(() => turnManager.GiveTurnValue() == correspondingTurn);
-        print("턴 진행 가능!! - - - 턴을 정상화 중 . . .!");
-        isOkToGoInFC = true;
     }
     public void MakeCardPublicSame(JobManager.Jobs job, int index ,ulong spaceId)
     {

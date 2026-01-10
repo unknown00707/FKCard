@@ -230,7 +230,20 @@ public class GameManager : NetworkBehaviour
     {
         return networkSessionManager.GivePlayerTotalNum();
     }
+    // 유저의 카드 사용 신호
+    public void InUseCardSignal(ulong id)
+    {
+        if(!IsServer) return;
 
+        turnManager.SetAblePlayerBoolValue((int)id);
+    }
+    // 턴 넘기기 지연 신호
+    public void InDelayForNextTurn(int delayTime, ulong id)
+    {
+        if(!IsServer) return;
+
+        turnManager.RequsetDelayAblePlayerTurnNum(delayTime, (int)id);
+    }
     public override void OnDestroy()
     {
         // NetworkVariable도 Dispose가 필요합니다.

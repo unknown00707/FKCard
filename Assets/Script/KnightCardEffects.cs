@@ -23,8 +23,7 @@ public class KnightCard3Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        // 3턴간 행동 불가 = +4
-        skillManager.cardSpaceCheck.WaitToPrivateAblieTrunFC(currentTurn + 4);
+        player.RequsetDelayForNextTurn(4);
         skillManager.StoreDamageData(skillManager.toEnemyID, true, currentTurn + 3, currentTurn + 4, 0, 1.00f, 0, 3);
     }
 }
@@ -32,8 +31,7 @@ public class KnightCard4Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        // 1턴간 행동 불가 = +2
-        skillManager.cardSpaceCheck.WaitToPrivateAblieTrunFC(currentTurn + 2);
+        player.RequsetDelayForNextTurn(2);
         skillManager.UpStateByBuffe(skillManager.toUserID, currentTurn + 1, currentTurn + 2, 0, 0, 40f, 0, 0, skillManager.job, skillManager.cardIndex);
     }
 }

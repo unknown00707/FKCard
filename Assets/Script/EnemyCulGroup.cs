@@ -240,4 +240,6 @@ public class EnemyCulGroup : MonoBehaviour
         }
         return  useSkillNum;
     }
+
+    ////////// 몬스터 -> 플레이어 함수들 //////////
 }

@@ -145,4 +145,31 @@ public class CardPlayer : NetworkBehaviour
         if(GameManager.Instance != null)
             GameManager.Instance.InComeHealTemproy(healData);
     }
+
+    // About Player Turn -----------------------------------
+    public void RequsetUseCardSignal()
+    {
+        if (!IsOwner) return;
+
+        RequsetUseCardSignalServerRpc();
+    }
+    [ServerRpc]
+    private void RequsetUseCardSignalServerRpc()
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InUseCardSignal(OwnerClientId);
+    }
+
+    public void RequsetDelayForNextTurn(int delayTime)
+    {
+        if (!IsOwner) return;
+
+        RequsetDelayForNextTurnServerRpc(delayTime);
+    }
+    [ServerRpc]
+    private void RequsetDelayForNextTurnServerRpc(int delayTime)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InDelayForNextTurn(delayTime, OwnerClientId);
+    }
 }
