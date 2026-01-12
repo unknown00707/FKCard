@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: db8240afc9908ce479cb58aa462c968c
+guid: 62bb445df82a8364ab99bfafd6b6ac89
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 955323811505779740
-    second: BossNameBarIMG_0
+      213: 8515013522052230310
+    second: DamageIMG_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BossNameBarIMG_0
+      name: DamageIMG_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 51
         y: 0
-        width: 600
-        height: 200
+        width: 397
+        height: 497
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c14364ee1fdf14d00800000000000000
-      internalID: 955323811505779740
+      spriteID: 6ac229f0fa76b2670800000000000000
+      internalID: 8515013522052230310
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BossNameBarIMG_0: 955323811505779740
+      DamageIMG_0: 8515013522052230310
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

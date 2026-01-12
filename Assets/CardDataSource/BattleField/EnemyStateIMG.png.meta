@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1f2ce950e27a4fa498fd17c28c240a16
+guid: 5eabca4ac47a4624b92fc53ebcfffc18
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1113606717510971957
-    second: monsterCardIMG_0
+      213: -3281978477161353399
+    second: EnemyStateIMG_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: monsterCardIMG_0
+      name: EnemyStateIMG_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 600
-        height: 750
+        width: 598
+        height: 202
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 532fab0d863547f00800000000000000
-      internalID: 1113606717510971957
+      spriteID: 94fe154b6f11472d0800000000000000
+      internalID: -3281978477161353399
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      monsterCardIMG_0: 1113606717510971957
+      EnemyStateIMG_0: -3281978477161353399
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

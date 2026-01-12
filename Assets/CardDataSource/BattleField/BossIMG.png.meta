@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: df42c97ade7dca64893b07c196c21409
+guid: 71b5c49db6d7efc4480f3b23395e0db4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2093452541694024560
-    second: PlayerTimeCardIMG_0
+      213: 1692361892735267575
+    second: BossIMG_0
+  - first:
+      213: -8638708026328950027
+    second: BossIMG_1
+  - first:
+      213: -8781036973286561534
+    second: BossIMG_2
+  - first:
+      213: -2176977955995322352
+    second: BossIMG_3
+  - first:
+      213: 292204653099648421
+    second: BossIMG_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,12 +138,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayerTimeCardIMG_0
+      name: BossIMG_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1
         y: 0
-        width: 600
+        width: 1169
         height: 750
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -141,8 +153,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 07b9fcdbeff6d0d10800000000000000
-      internalID: 2093452541694024560
+      spriteID: 7f2b4e7cc2a7c7710800000000000000
+      internalID: 1692361892735267575
       vertices: []
       indices: 
       edges: []
@@ -151,7 +163,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 45f6fd56c0a694c48b04613d8b991144
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +173,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PlayerTimeCardIMG_0: 2093452541694024560
+      BossIMG_0: 1692361892735267575
+      BossIMG_1: -8638708026328950027
+      BossIMG_2: -8781036973286561534
+      BossIMG_3: -2176977955995322352
+      BossIMG_4: 292204653099648421
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
