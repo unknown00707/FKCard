@@ -5,6 +5,7 @@ using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
+[System.Serializable]
 public class AboutDamages : INetworkSerializable
 {
     public int targetID;
@@ -22,6 +23,11 @@ public class AboutDamages : INetworkSerializable
     }
 }
 [System.Serializable]
+public class DamageGroup
+{
+    public List<AboutDamages> aboutDamage = new();
+}
+[System.Serializable]
 public class EnemyMonster
 {
     public Button[] monsters;
@@ -33,7 +39,7 @@ public class EnemyCulGroup : MonoBehaviour
     public CardEffectAndCulDuringManager cEACDManager;
     public StageManager stageManager;
     public TurnManager turnManager;
-    CardPlayer cardPlayer;
+    CardPlayer player;
     public Button[] enemyPrefabs;
     public TextMeshProUGUI totalHP;
     public TextMeshProUGUI totalDG;
@@ -44,7 +50,7 @@ public class EnemyCulGroup : MonoBehaviour
     public Dictionary<int, EnemyCardData> activeMonsterDic = new();
     private Dictionary<int, IMonasterEffect> monsterCardEffects; // current stage Num , monster index / current turn
     private Dictionary<(int, int), bool> mostserCheckUseSpecailSkill = new();
-    public List<AboutDamages> enemyAboutDamages = new();
+    public List<DamageGroup> enemyAboutDamages = new();
     [Header("Boss")]
     public Button[] stageBoss;
 
@@ -53,7 +59,7 @@ public class EnemyCulGroup : MonoBehaviour
     {
         for(int i = 0; i < MAX_NUM_OF_MONSTER; i++)
         {
-            enemyAboutDamages.Add(new AboutDamages());
+            enemyAboutDamages.Add(new DamageGroup());
         }
         MakeSameInit(0,2);
         MakeSameTotalState();
@@ -277,7 +283,7 @@ public class EnemyCulGroup : MonoBehaviour
     // 공격
     public void Attack(AboutDamages aboutDamages, int sendID, bool isTimeAttack, int startTrunNum, int endTrunNum)
     {
-        enemyAboutDamages[sendID].Add(aboutDamages);
+        enemyAboutDamages[sendID].aboutDamage.Add(aboutDamages);
     }
     // 버프
 }
