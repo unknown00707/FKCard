@@ -6,5 +6,5 @@ public interface ICardEffect
 
 public interface IMonasterEffect
 {
-    void ApplyEffect(EnemyCulGroup enemyCulGroup, int currentTrun);
+    void ApplyEffect(EnemyCulGroup enemyCulGroup, int selfID, int currentTrun);
 }

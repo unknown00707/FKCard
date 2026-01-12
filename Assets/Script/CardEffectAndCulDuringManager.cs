@@ -210,8 +210,10 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         return false;
     }
 
-    public void RequsetDownUserCurrentStatFromDamage(UserAoubtDamage givenDamge)
+    public void RequsetDownUserCurrentStatFromDamage(UserAoubtDamage givenDamge, bool isAdd)
     {
+        if(isAdd)
+            userAboutDamages[givenDamge.targetMonsterID].damage.Add(givenDamge);
         int targetUserID = (int)givenDamge.targetMonsterID;
         float totalDamage = givenDamge.hitHpDamage + givenDamge.hitDGDamage;
         userTotalStates[targetUserID].currentHp -= totalDamage * userTotalStates[targetUserID].damageMultiplier;

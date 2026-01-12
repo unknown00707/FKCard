@@ -4,6 +4,23 @@ using TMPro;
 using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
+public class AboutDamages : INetworkSerializable
+{
+    public int targetID;
+    public float damageAmount;
+    public int numberOfHits;
+    public float takenDamage;
+    public int currentTurn;
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref targetID);
+        serializer.SerializeValue(ref damageAmount);
+        serializer.SerializeValue(ref numberOfHits);
+        serializer.SerializeValue(ref takenDamage);
+        serializer.SerializeValue(ref currentTurn);
+    }
+}
 [System.Serializable]
 public class EnemyMonster
 {
@@ -16,21 +33,28 @@ public class EnemyCulGroup : MonoBehaviour
     public CardEffectAndCulDuringManager cEACDManager;
     public StageManager stageManager;
     public TurnManager turnManager;
+    CardPlayer cardPlayer;
     public Button[] enemyPrefabs;
     public TextMeshProUGUI totalHP;
     public TextMeshProUGUI totalDG;
     public int NUM_OF_DIFFER_TURN = 6;
+    public int MAX_NUM_OF_MONSTER = 3;
     [Header("Monster")]
     public List<EnemyMonster> stageMonsters;
     public Dictionary<int, EnemyCardData> activeMonsterDic = new();
     private Dictionary<int, IMonasterEffect> monsterCardEffects; // current stage Num , monster index / current turn
     private Dictionary<(int, int), bool> mostserCheckUseSpecailSkill = new();
+    public List<AboutDamages> enemyAboutDamages = new();
     [Header("Boss")]
     public Button[] stageBoss;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        for(int i = 0; i < MAX_NUM_OF_MONSTER; i++)
+        {
+            enemyAboutDamages.Add(new AboutDamages());
+        }
         MakeSameInit(0,2);
         MakeSameTotalState();
     }
@@ -38,7 +62,10 @@ public class EnemyCulGroup : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (player == null && NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
+        }
     }
 
     private void InitializeCardEffects()
@@ -116,7 +143,7 @@ public class EnemyCulGroup : MonoBehaviour
                 if (damageData.cuurentTrun != turnManager.GiveTurnValue())
                     continue;
 
-                if (damageData.isTargetEnemy) // 몬스터 공격
+                if (damageData.isTargetEnemy) // 몬스터가 공격을 받는 경우
                 {
                     // 타겟 몬스터 가져오기
                     // (TargetID가 유효한지, 몬스터가 살아있는지 체크하는 함수가 있다고 가정)
@@ -152,7 +179,7 @@ public class EnemyCulGroup : MonoBehaviour
                 }
                 else // 플레이어 대상 (자해 / 팀 공격 등)
                 {
-                    cEACDManager.RequsetDownUserCurrentStatFromDamage(damageData);
+                    cEACDManager.RequsetDownUserCurrentStatFromDamage(damageData, false);
                     // ... 플레이어 로직 ...
                     DamageDataRemoveByHitHumber(userDamgeGroup, damageData,i);
                 }
@@ -202,7 +229,7 @@ public class EnemyCulGroup : MonoBehaviour
             // Dictionary에서 해당 직업/카드의 효과를 찾아서 실행
             if (monsterCardEffects.TryGetValue(RandomSkillVAlue(i), out IMonasterEffect effect))
             {
-                effect.ApplyEffect(this, currentTurn);
+                effect.ApplyEffect(this, i, currentTurn);
             }
             else
             {
@@ -242,4 +269,15 @@ public class EnemyCulGroup : MonoBehaviour
     }
 
     ////////// 몬스터 -> 플레이어 함수들 //////////
+    // 공격할 플레이어 찾기 - > 나중에 구현(우선순위 관련 로직이 아직 명확하지 않음)
+    public int FindPlayerToAttack()
+    {
+        return 0;
+    }
+    // 공격
+    public void Attack(AboutDamages aboutDamages, int sendID, bool isTimeAttack, int startTrunNum, int endTrunNum)
+    {
+        enemyAboutDamages[sendID].Add(aboutDamages);
+    }
+    // 버프
 }
