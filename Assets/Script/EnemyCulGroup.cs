@@ -9,23 +9,37 @@ using Unity.Netcode;
 public class AboutDamages : INetworkSerializable
 {
     public int targetID;
+    public bool isTimeAttack;
     public float damageAmount;
     public int numberOfHits;
-    public float takenDamage;
-    public int currentTurn;
+    public int startTrunNum;
+    public int endTrunNum;
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref targetID);
+        serializer.SerializeValue(ref isTimeAttack);
         serializer.SerializeValue(ref damageAmount);
         serializer.SerializeValue(ref numberOfHits);
-        serializer.SerializeValue(ref takenDamage);
-        serializer.SerializeValue(ref currentTurn);
+        serializer.SerializeValue(ref startTrunNum);
+        serializer.SerializeValue(ref endTrunNum);
     }
+}
+[System.Serializable]
+public class TakenDamage
+{
+    public float takenDamage;
+    public int currentTurn;
 }
 [System.Serializable]
 public class DamageGroup
 {
     public List<AboutDamages> aboutDamage = new();
+}
+[System.Serializable]
+public class TakenDamageGroup
+{
+    public List<TakenDamage> takenDamages = new();
 }
 [System.Serializable]
 public class EnemyMonster
@@ -50,7 +64,8 @@ public class EnemyCulGroup : MonoBehaviour
     public Dictionary<int, EnemyCardData> activeMonsterDic = new();
     private Dictionary<int, IMonasterEffect> monsterCardEffects; // current stage Num , monster index / current turn
     private Dictionary<(int, int), bool> mostserCheckUseSpecailSkill = new();
-    public List<DamageGroup> enemyAboutDamages = new();
+    public List<DamageGroup> monsterAboutDamages = new();
+    public List<TakenDamage> monsterTakenDamages = new();
     [Header("Boss")]
     public Button[] stageBoss;
 
@@ -59,7 +74,8 @@ public class EnemyCulGroup : MonoBehaviour
     {
         for(int i = 0; i < MAX_NUM_OF_MONSTER; i++)
         {
-            enemyAboutDamages.Add(new DamageGroup());
+            monsterAboutDamages.Add(new DamageGroup());
+            monsterTakenDamages.Add(new TakenDamage());
         }
         MakeSameInit(0,2);
         MakeSameTotalState();
@@ -185,7 +201,7 @@ public class EnemyCulGroup : MonoBehaviour
                 }
                 else // 플레이어 대상 (자해 / 팀 공격 등)
                 {
-                    cEACDManager.RequsetDownUserCurrentStatFromDamage(damageData, false);
+                    cEACDManager.RequsetDownUserCurrentStatFromDamage(damageData);
                     // ... 플레이어 로직 ...
                     DamageDataRemoveByHitHumber(userDamgeGroup, damageData,i);
                 }
@@ -281,9 +297,13 @@ public class EnemyCulGroup : MonoBehaviour
         return 0;
     }
     // 공격
-    public void Attack(AboutDamages aboutDamages, int sendID, bool isTimeAttack, int startTrunNum, int endTrunNum)
+    public void Attack(AboutDamages aboutDamages, int sendID)
     {
-        enemyAboutDamages[sendID].aboutDamage.Add(aboutDamages);
+        player.RequsetMonsterAttackDataStoreServerRpc(aboutDamages, sendID);
+    }
+    public void StoreDataAboutAttack(AboutDamages aboutDamages, int sendID)
+    {
+        monsterAboutDamages[sendID].aboutDamage.Add(aboutDamages);
     }
     // 버프
 }

@@ -172,4 +172,26 @@ public class CardPlayer : NetworkBehaviour
         if(GameManager.Instance != null)
             GameManager.Instance.InDelayForNextTurn(delayTime, OwnerClientId);
     }
+
+    // About Enemy
+    [ServerRpc]
+    public void RequsetMonsterAttackDataStoreServerRpc(AboutDamages aboutDamages, int enemyId)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.InStoreMonsterAttackDamage(aboutDamages, enemyId);
+    }
+
+    // Player Alive Check
+    public void RequsetDieSignal(int userId)
+    {
+        if(!IsOwner) return;
+
+        RequsetDieSignalServerRpc(userId);
+    }
+    [ServerRpc]
+    private void RequsetDieSignalServerRpc(int userId)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.RequsetDieSingal(userId);
+    }
 }

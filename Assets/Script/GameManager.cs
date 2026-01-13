@@ -21,6 +21,7 @@ public class GameManager : NetworkBehaviour
     StageManager stageManager;
     NetworkSessionManager networkSessionManager;
     TurnManager turnManager;
+    EnemyCulGroup enemyCulGroup;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -39,6 +40,7 @@ public class GameManager : NetworkBehaviour
         stageManager = FindAnyObjectByType<StageManager>();
         networkSessionManager = FindAnyObjectByType<NetworkSessionManager>();
         turnManager = FindAnyObjectByType<TurnManager>();
+        enemyCulGroup = FindAnyObjectByType<EnemyCulGroup>();
 
         playerJobs = new NetworkList<FixedString64Bytes>(
             new List<FixedString64Bytes>{new("0"), new("1"), new("2")},
@@ -102,6 +104,28 @@ public class GameManager : NetworkBehaviour
     {
         // 턴 넘김 효과 . . .
     }
+    // REQUSET ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    // 카드 배치 신호 받기 및 카드 생성 함수 호출
+    public void RequsetMakeSameCardPublic(JobManager.Jobs job, int index ,ulong id)
+    {
+        if(!IsServer) return;
+
+        RequsetMakeSameCardPublicClientRpc(job, index, id);
+    }
+    [ClientRpc]
+    private void RequsetMakeSameCardPublicClientRpc(JobManager.Jobs job, int index ,ulong id)
+    {
+        print("ClineRpc");
+        cardSpaceCheck.MakeCardPublicSame(job, index, id);
+    }
+    // 플레이어가 죽음 신호
+    public void RequsetDieSingal(int userId)
+    {
+        if(!IsServer) return;
+
+        networkSessionManager.ChangeStateAilive(userId);   
+    }
+    //IN(About DATA) ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     // 직업 선택 
     public void InDicUserJobValue(ulong index, JobManager.Jobs job)
     {
@@ -144,20 +168,6 @@ public class GameManager : NetworkBehaviour
         if(!IsServer) return;
         
         durManager.ReciveUsersStat(hp, dg, crip, damageFromTakenDg, beneficialEffectMultiplier, userId);
-    }
-
-    // 카드 배치 신호 받기 및 카드 생성 함수 호출
-    public void RequsetMakeSameCardPublic(JobManager.Jobs job, int index ,ulong id)
-    {
-        if(!IsServer) return;
-
-        RequsetMakeSameCardPublicClientRpc(job, index, id);
-    }
-    [ClientRpc]
-    private void RequsetMakeSameCardPublicClientRpc(JobManager.Jobs job, int index ,ulong id)
-    {
-        print("ClineRpc");
-        cardSpaceCheck.MakeCardPublicSame(job, index, id);
     }
 
     // 카드 배치 완료 및 효과 발동 
@@ -225,10 +235,19 @@ public class GameManager : NetworkBehaviour
 
         playerJobSkill.ReciveUpHealDataTemproy(healData);
     }
-    ////// send data
-    public int SendPlayerTotalNum()
+    // 몬스터 공격 정보 저장
+    public void InStoreMonsterAttackDamage(AboutDamages aboutDamages, int enemyId)
     {
-        return networkSessionManager.GivePlayerTotalNum();
+        if(!IsServer) return;
+
+        enemyCulGroup.StoreDataAboutAttack(aboutDamages, enemyId);
+        UserAoubtDamage userAoubtDamage = new()
+        {
+            targetMonsterID = (ulong)aboutDamages.targetID,
+            hitDGDamage = aboutDamages.damageAmount,
+            numberOfHits = aboutDamages.numberOfHits
+        };
+        durManager.RequsetDownUserCurrentStatFromDamage(userAoubtDamage);
     }
     // 유저의 카드 사용 신호
     public void InUseCardSignal(ulong id)
@@ -243,6 +262,11 @@ public class GameManager : NetworkBehaviour
         if(!IsServer) return;
 
         turnManager.RequsetDelayAblePlayerTurnNum(delayTime, (int)id);
+    }
+    ////// send data from this ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    public int SendPlayerTotalNum()
+    {
+        return networkSessionManager.GivePlayerTotalNum();
     }
     public override void OnDestroy()
     {

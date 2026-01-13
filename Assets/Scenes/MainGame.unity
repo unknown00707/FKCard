@@ -5472,10 +5472,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardEffectAndCulDuringManager
   turnManager: {fileID: 1421212752}
+  sessionManager: {fileID: 1417306287}
   userChangingState: []
   userDamaingChangs: []
   userTotalStates: []
   userAboutDamages: []
+  userTakenDamageGroups: []
   ciriticalMultiplier: 2
 --- !u!1 &1069000737
 GameObject:
@@ -6096,6 +6098,7 @@ MonoBehaviour:
   totalHP: {fileID: 237255864}
   totalDG: {fileID: 1157628407}
   NUM_OF_DIFFER_TURN: 6
+  MAX_NUM_OF_MONSTER: 3
   stageMonsters:
   - monsters:
     - {fileID: 4966559074395772977, guid: 3397140ed32c83847b1bb6f0d389f9e7, type: 3}
@@ -6103,6 +6106,8 @@ MonoBehaviour:
     - {fileID: 4966559074395772977, guid: f12982e84808ded49bf9d1196115e333, type: 3}
   - monsters: []
   - monsters: []
+  monsterAboutDamages: []
+  monsterTakenDamages: []
   stageBoss: []
 --- !u!1 &1150050378
 GameObject:

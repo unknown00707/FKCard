@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 [System.Serializable]
@@ -32,7 +33,6 @@ public class UserAoubtDamage
     public float hitDGDamage;
     public float hitTakenDamage;
     public int numberOfHits;
-    public float inDamage; // 받은 피해
     public int cuurentTrun;
 }
 [System.Serializable]
@@ -57,13 +57,15 @@ public class UserDamgeGroup
 public class CardEffectAndCulDuringManager : MonoBehaviour
 {
     public TurnManager turnManager;
+    public NetworkSessionManager sessionManager;
     public float[][] userState = new float[3][]; // 초기 유저의 정보 -> 안 변함 -> 스테이지 변하면 변함
     // 유저의 지속 기간에 따른 스텟 변화 저장
     public List<UserTime> userChangingState = new(); 
     public List<UserDamaingChang> userDamaingChangs = new();
     public List<UserStat> userTotalStates = new(); // 현재 턴의 총 유저들의 스텟
     public List<UserDamgeGroup> userAboutDamages = new(); // 데미지 관련 리스트
-
+    public List<TakenDamageGroup> userTakenDamageGroups = new();
+    CardPlayer player;
     public int ciriticalMultiplier = 2;
 
     void Awake()
@@ -75,6 +77,16 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
             userDamaingChangs.Add(new UserDamaingChang());
             userTotalStates.Add(new UserStat());
             userAboutDamages.Add(new UserDamgeGroup());
+            userTakenDamageGroups.Add(new TakenDamageGroup());
+            userTakenDamageGroups[i].takenDamages.Add(new TakenDamage());
+        }
+    }
+
+    void Update()
+    {
+        if (player == null && NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
+        {
+            player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
         }
     }
 
@@ -116,7 +128,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                     if(upStateData.cardIndex == 4)
                     {
                         userChangingState[(int)upStateData.targetUserID].chaingingHp = 
-                                userAboutDamages[(int)upStateData.targetUserID].damage[turnManager.GiveTurnValue() -1].inDamage * upStateData.upHp;
+                                userTakenDamageGroups[(int)upStateData.targetUserID].takenDamages[turnManager.GiveTurnValue() -1].takenDamage * upStateData.upHp;
                     }
                     break; 
             }
@@ -210,14 +222,44 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         return false;
     }
 
-    public void RequsetDownUserCurrentStatFromDamage(UserAoubtDamage givenDamge, bool isAdd)
+    public void RequsetDownUserCurrentStatFromDamage(UserAoubtDamage givenDamge)
     {
-        if(isAdd)
-            userAboutDamages[(int)givenDamge.targetMonsterID].damage.Add(givenDamge);
+        int realTurn = turnManager.GiveTurnValue();
         int targetUserID = (int)givenDamge.targetMonsterID;
+        List<TakenDamage> takenDamages  = userTakenDamageGroups[targetUserID].takenDamages;
         float totalDamage = givenDamge.hitHpDamage + givenDamge.hitDGDamage;
-        userTotalStates[targetUserID].currentHp -= totalDamage * userTotalStates[targetUserID].damageMultiplier;
-        givenDamge.inDamage = totalDamage;
+        TakenDamage taken = new()
+        {
+            takenDamage = totalDamage,
+            currentTurn = realTurn
+        };
+
+        for(int i = 0; i < givenDamge.numberOfHits; i++)
+        {
+            if(!sessionManager.GivePlayerAliveBool(targetUserID))
+            {
+                int anotherTargetID = targetUserID;
+                while(anotherTargetID == targetUserID)
+                {
+                    anotherTargetID = FindAnyAlivePlayer();
+                }
+                targetUserID = anotherTargetID;
+            }
+            userTotalStates[targetUserID].currentHp -= totalDamage * userTotalStates[targetUserID].damageMultiplier;
+            if(takenDamages.Count <= realTurn || takenDamages[realTurn].currentTurn != realTurn)
+                takenDamages.Add(taken);
+            else
+                takenDamages[realTurn].takenDamage = totalDamage;    
+            if(userTotalStates[targetUserID].currentHp <= 0)
+                player.RequsetDieSignal(targetUserID);
+            
+        }
+        
+    }
+
+    int FindAnyAlivePlayer()
+    {
+        return UnityEngine.Random.Range(0, sessionManager.GivePlayerTotalNum());
     }
 
     public void ReciveHealData(ulong userId, float healAmount)
