@@ -64,7 +64,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
     public List<UserDamaingChang> userDamaingChangs = new();
     public List<UserStat> userTotalStates = new(); // 현재 턴의 총 유저들의 스텟
     public List<UserDamgeGroup> userAboutDamages = new(); // 데미지 관련 리스트
-    public List<TakenDamageGroup> userTakenDamageGroups = new();
+    public List<TakenDamage> userTakenDamageGroups = new();
     CardPlayer player;
     public int ciriticalMultiplier = 2;
 
@@ -77,8 +77,6 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
             userDamaingChangs.Add(new UserDamaingChang());
             userTotalStates.Add(new UserStat());
             userAboutDamages.Add(new UserDamgeGroup());
-            userTakenDamageGroups.Add(new TakenDamageGroup());
-            userTakenDamageGroups[i].takenDamages.Add(new TakenDamage());
         }
     }
 
@@ -127,8 +125,20 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                 case JobManager.Jobs.defender :
                     if(upStateData.cardIndex == 4)
                     {
-                        userChangingState[(int)upStateData.targetUserID].chaingingHp = 
-                                userTakenDamageGroups[(int)upStateData.targetUserID].takenDamages[turnManager.GiveTurnValue() -1].takenDamage * upStateData.upHp;
+                        var takenDamage = FindTakenDamgeListByFilter(userTakenDamageGroups, (int)upStateData.targetUserID, turnManager.GiveTurnValue() -1);
+                        float takenDamageTotal = 0;
+                        if(takenDamage.Count == 0)
+                        {
+                            takenDamageTotal = 0;
+                        }
+                        else
+                        {
+                            foreach(TakenDamage takenDG in takenDamage)
+                            {
+                                takenDamageTotal += takenDG.takenDamage;
+                            }
+                        }
+                        userChangingState[(int)upStateData.targetUserID].chaingingHp = takenDamageTotal * upStateData.upHp;
                     }
                     break; 
             }
@@ -226,12 +236,15 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
     {
         int realTurn = turnManager.GiveTurnValue();
         int targetUserID = (int)givenDamge.targetMonsterID;
-        List<TakenDamage> takenDamages  = userTakenDamageGroups[targetUserID].takenDamages;
         float totalDamage = givenDamge.hitHpDamage + givenDamge.hitDGDamage;
+        
+        
+        List<TakenDamage> takenDamages  = FindTakenDamgeListByFilter(userTakenDamageGroups, targetUserID, realTurn);
         TakenDamage taken = new()
         {
+            id = targetUserID,
             takenDamage = totalDamage,
-            currentTurn = realTurn
+            currentTurn = realTurn  
         };
 
         for(int i = 0; i < givenDamge.numberOfHits; i++)
@@ -246,15 +259,20 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                 targetUserID = anotherTargetID;
             }
             userTotalStates[targetUserID].currentHp -= totalDamage * userTotalStates[targetUserID].damageMultiplier;
-            if(takenDamages.Count <= realTurn || takenDamages[realTurn].currentTurn != realTurn)
+            if(takenDamages.Count == 0)
                 takenDamages.Add(taken);
             else
-                takenDamages[realTurn].takenDamage = totalDamage;    
-            if(userTotalStates[targetUserID].currentHp <= 0)
+                takenDamages[^1].takenDamage += totalDamage;    
+
+            if(userTotalStates[targetUserID].currentHp <= 0 && sessionManager.GivePlayerAliveBool(targetUserID))
                 player.RequsetDieSignal(targetUserID);
-            
         }
         
+    }
+
+    public List<TakenDamage> FindTakenDamgeListByFilter(List<TakenDamage> orignList, int id, int turn)
+    {
+        return orignList.Where(data => data.id == id).Where(data => data.currentTurn == turn).ToList(); 
     }
 
     int FindAnyAlivePlayer()

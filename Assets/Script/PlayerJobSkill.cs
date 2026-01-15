@@ -482,7 +482,7 @@ public class PlayerJobSkill : NetworkBehaviour
             case 2:
                 job = JobManager.Jobs.healer;
                 cardIndex = 2;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId);
                 break;
             case 3:
                 job = JobManager.Jobs.healer;
@@ -497,7 +497,7 @@ public class PlayerJobSkill : NetworkBehaviour
             case 5:
                 job = JobManager.Jobs.healer;
                 cardIndex = 5;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId);
                 break;
             case 6:
                 job = JobManager.Jobs.healer;

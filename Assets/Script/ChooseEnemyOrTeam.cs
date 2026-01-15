@@ -3,6 +3,7 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.UI;
 
 public class ChooseEnemyOrTeam : MonoBehaviour
@@ -11,6 +12,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
     public EnemyCulGroup enemyCulGroup;
     public PlayerJobSkill playerJobSkill;
     public TurnManager turnManager;
+    public NetworkSessionManager sessionManager;
     public GameObject chooseObj;
     public Button[] seletedBTN; 
     public bool isForPlayer;
@@ -87,6 +89,21 @@ public class ChooseEnemyOrTeam : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void CertainSetOn(int selfID)
+    {
+        for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
+        {
+            if(!sessionManager.isPlayerAlive[i] && i != selfID)
+            {
+                Image icon = seletedBTN[i].image;
+                string iconString = GameManager.Instance.playerJobs[i].ToString();
+                jobManager.ChangeImgToIcon(icon, iconString);
+                seletedBTN[i].gameObject.SetActive(true);        
+            }
+        }
+        
     }
 
     public void EndOfSelect(int index) // 선택이 끝났을 때

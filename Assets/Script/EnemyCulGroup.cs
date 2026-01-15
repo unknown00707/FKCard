@@ -28,6 +28,7 @@ public class AboutDamages : INetworkSerializable
 [System.Serializable]
 public class TakenDamage
 {
+    public int id;
     public float takenDamage;
     public int currentTurn;
 }
@@ -35,11 +36,6 @@ public class TakenDamage
 public class DamageGroup
 {
     public List<AboutDamages> aboutDamage = new();
-}
-[System.Serializable]
-public class TakenDamageGroup
-{
-    public List<TakenDamage> takenDamages = new();
 }
 [System.Serializable]
 public class EnemyMonster
@@ -65,7 +61,7 @@ public class EnemyCulGroup : MonoBehaviour
     private Dictionary<int, IMonasterEffect> monsterCardEffects; // current stage Num , monster index / current turn
     private Dictionary<(int, int), bool> mostserCheckUseSpecailSkill = new();
     public List<DamageGroup> monsterAboutDamages = new();
-    public List<TakenDamage> monsterTakenDamages = new();
+    public List<TakenDamage> enemyTakenDamages = new();
     [Header("Boss")]
     public Button[] stageBoss;
 
@@ -75,7 +71,6 @@ public class EnemyCulGroup : MonoBehaviour
         for(int i = 0; i < MAX_NUM_OF_MONSTER; i++)
         {
             monsterAboutDamages.Add(new DamageGroup());
-            monsterTakenDamages.Add(new TakenDamage());
         }
         MakeSameInit(0,2);
         MakeSameTotalState();
@@ -190,6 +185,22 @@ public class EnemyCulGroup : MonoBehaviour
                         // 데미지 계산
                         float totalDmg = damageData.hitHpDamage + damageData.hitDGDamage + damageData.hitTakenDamage;
                         targetEnemy.enemyHP -= totalDmg;
+
+                        // 받은 데미지 저장
+                        var takenDamage = cEACDManager.FindTakenDamgeListByFilter(enemyTakenDamages, (int)damageData.targetMonsterID, turnManager.GiveTurnValue());
+                        if(takenDamage.Count == 0)
+                        {
+                            TakenDamage takenDamageData = new()
+                            {
+                                id = (int)damageData.targetMonsterID,
+                                takenDamage = totalDmg,
+                                currentTurn = turnManager.GiveTurnValue()
+                            };
+                            enemyTakenDamages.Add(takenDamageData);
+                        }
+                        else
+                            takenDamage[^1].takenDamage += totalDmg;
+
                         // 공격 횟수 차감
                         Debug.Log($"공격! 남은 횟수: {damageData.numberOfHits}, 적 HP: {targetEnemy.enemyHP}");
                         damageData.numberOfHits--;
