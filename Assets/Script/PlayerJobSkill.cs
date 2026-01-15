@@ -333,6 +333,11 @@ public class PlayerJobSkill : NetworkBehaviour
             }    
         }
     }
+    // 아군 살리기
+    public void ReviveTeamMember(ulong userId)
+    {
+        player.RequsetDieSignal(userId , false);
+    }
     // 💡 핵심 변경: 복잡한 switch-case가 사라지고 단 3줄로 끝남!
     public void TriggerSkillFromChoosEnemyOrTeam()
     {
@@ -352,37 +357,31 @@ public class PlayerJobSkill : NetworkBehaviour
         // 직업 카드 스킬 저장 후 카드 발동 준비 됨
         player.ReciveSignCardEffectReady(false);
     }
+    void SkillBasicSet(Jobs jobType, int index ,bool isToPlayer, bool isMe)
+    {
+        job = jobType;
+        cardIndex = index;
+        chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(isToPlayer, isMe);
+    }
     public void DefenderSkills(int index)
     {
         int currentTrun = turnManager.GiveTurnValue();
         switch(index)
         {
             case 0:
-                job = JobManager.Jobs.defender;
-                cardIndex = 0;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.defender, 0, true, true);
                 break;
             case 1:
-                job = JobManager.Jobs.defender;
-                cardIndex = 1;
-                //isSingleAttack = true;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.defender, 1, false, false);
                 break;
             case 2:
-                job = JobManager.Jobs.defender;
-                cardIndex = 2;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.defender, 2, true, true);
                 break;
             case 3:
-                job = JobManager.Jobs.defender;
-                cardIndex = 3;
-                isSingleAttack = true;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.defender, 3, false, false);
                 break;
             case 4:
-                job = JobManager.Jobs.defender;
-                cardIndex = 4;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.defender, 4, true, true);
                 break;
             case 5:
                 job = JobManager.Jobs.defender;
@@ -403,34 +402,22 @@ public class PlayerJobSkill : NetworkBehaviour
         switch(index)
         {
             case 0:
-                job = JobManager.Jobs.knight;
-                cardIndex = 0;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.knight, 0, false, false);
                 break;
             case 1:
-                job = JobManager.Jobs.knight;
-                cardIndex = 1;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.knight, 1, false, false);
                 break;
             case 2:
-                job = JobManager.Jobs.knight;
-                cardIndex = 2;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.knight, 2, false, false);
                 break;
             case 3:
-                job = JobManager.Jobs.knight;
-                cardIndex = 3;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.knight, 3, false, false);
                 break;
             case 4:
-                job = JobManager.Jobs.knight;
-                cardIndex = 4;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.knight, 4, true, true);
                 break;
             case 5:
-                job = JobManager.Jobs.knight;
-                cardIndex = 5;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.knight, 5, false, false);
                 break;
         }
     }
@@ -439,29 +426,19 @@ public class PlayerJobSkill : NetworkBehaviour
         switch(index)
         {
             case 0:
-                job = JobManager.Jobs.wizard;
-                cardIndex = 0;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.wizard, 0, true, true);
                 break;
             case 1:
-                job = JobManager.Jobs.wizard;
-                cardIndex = 1;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.wizard, 1, true, true);
                 break;
             case 2:
-                job = JobManager.Jobs.wizard;
-                cardIndex = 2;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(false, false);
+                SkillBasicSet(JobManager.Jobs.wizard, 2, false, false);
                 break;
             case 3:
-                job = JobManager.Jobs.wizard;
-                cardIndex = 3;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.wizard, 3, true, true);
                 break;
             case 4:
-                job = JobManager.Jobs.wizard;
-                cardIndex = 4;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.wizard, 4, true, true);
                 break;
         }
     }
@@ -470,14 +447,10 @@ public class PlayerJobSkill : NetworkBehaviour
         switch(index)
         {
             case 0:
-                job = JobManager.Jobs.healer;
-                cardIndex = 0;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, false);
+                SkillBasicSet(JobManager.Jobs.healer, 0, true, false);
                 break;
             case 1:
-                job = JobManager.Jobs.healer;
-                cardIndex = 1;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.healer, 1, true, true);
                 break;
             case 2:
                 job = JobManager.Jobs.healer;
@@ -485,14 +458,10 @@ public class PlayerJobSkill : NetworkBehaviour
                 chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId);
                 break;
             case 3:
-                job = JobManager.Jobs.healer;
-                cardIndex = 3;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.healer, 3, true, true);
                 break;
             case 4:
-                job = JobManager.Jobs.healer;
-                cardIndex = 4;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.healer, 4, true, true);
                 break;
             case 5:
                 job = JobManager.Jobs.healer;
@@ -500,14 +469,10 @@ public class PlayerJobSkill : NetworkBehaviour
                 chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId);
                 break;
             case 6:
-                job = JobManager.Jobs.healer;
-                cardIndex = 6;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, true);
+                SkillBasicSet(JobManager.Jobs.healer, 6, true, true);
                 break;
             case 7:
-                job = JobManager.Jobs.healer;
-                cardIndex = 7;
-                chooseEnemyOrTeam.SetUpOnChooseEnemyOrTeam(true, false);
+                SkillBasicSet(JobManager.Jobs.healer, 7, true, false);
                 break;
         }
     }

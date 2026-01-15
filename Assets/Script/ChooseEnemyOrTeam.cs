@@ -42,9 +42,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
             if(isMe || (turnManager.GiveTurnValue() == 1))
             {
                 print("유저가 한 명! 강제 실행 작동. . .");
-                BasciInit();
-                playerJobSkill.ReciveTargetUserIDFromChoose(NetworkManager.Singleton.LocalClientId, isForPlayer);
-                OnReadyToAttack.Invoke();
+                EndOfSelect((int)NetworkManager.Singleton.LocalClientId);
                 return;
             }
             else
@@ -74,9 +72,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
             if(activeNum == 1)
             {
                 print("적군이 한 명! 강제 실행 작동. . .");
-                playerJobSkill.ReciveTargetUserIDFromChoose(0, isForPlayer);
-                BasciInit();
-                OnReadyToAttack.Invoke();
+                EndOfSelect(0);
                 return;
             }
             for(int i = 0; i < enemyCulGroup.enemyPrefabs.Count(); i++)
@@ -93,14 +89,37 @@ public class ChooseEnemyOrTeam : MonoBehaviour
 
     public void CertainSetOn(int selfID)
     {
-        for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
+        chooseObj.SetActive(true);
+        isForPlayer = true;
+        bool isThereDie = false;
+
+        foreach(bool isAlive in sessionManager.isPlayerAlive)
         {
-            if(!sessionManager.isPlayerAlive[i] && i != selfID)
+            if(!isAlive)
             {
-                Image icon = seletedBTN[i].image;
-                string iconString = GameManager.Instance.playerJobs[i].ToString();
-                jobManager.ChangeImgToIcon(icon, iconString);
-                seletedBTN[i].gameObject.SetActive(true);        
+                isThereAlive = true;
+                break;
+            }
+        }
+
+        if(!isThereAlive)
+        {
+            print("죽어있는 유저가 없습니다!");
+            EndOfSelect((int)NetworkManager.Singleton.LocalClientId);
+            return;
+        }
+        else
+        {
+            print("죽어있는 유저가 존재합니다!");
+            for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
+            {
+                if(!sessionManager.isPlayerAlive[i] && i != selfID)
+                {
+                    Image icon = seletedBTN[i].image;
+                    string iconString = GameManager.Instance.playerJobs[i].ToString();
+                    jobManager.ChangeImgToIcon(icon, iconString);
+                    seletedBTN[i].gameObject.SetActive(true);        
+                }
             }
         }
         

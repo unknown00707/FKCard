@@ -182,16 +182,16 @@ public class CardPlayer : NetworkBehaviour
     }
 
     // Player Alive Check
-    public void RequsetDieSignal(int userId)
+    public void RequsetDieSignal(int userId, bool isDie)
     {
         if(!IsOwner) return;
 
-        RequsetDieSignalServerRpc(userId);
+        RequsetDieSignalServerRpc(userId, isDie);
     }
     [ServerRpc]
-    private void RequsetDieSignalServerRpc(int userId)
+    private void RequsetDieSignalServerRpc(int userId, bool isDie)
     {
         if(GameManager.Instance != null)
-            GameManager.Instance.RequsetDieSingal(userId);
+            GameManager.Instance.RequsetDieSingal(userId, isDie);
     }
 }

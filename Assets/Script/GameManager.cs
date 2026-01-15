@@ -119,11 +119,11 @@ public class GameManager : NetworkBehaviour
         cardSpaceCheck.MakeCardPublicSame(job, index, id);
     }
     // 플레이어가 죽음 신호
-    public void RequsetDieSingal(int userId)
+    public void RequsetDieSingal(int userId, bool isDie)
     {
         if(!IsServer) return;
 
-        networkSessionManager.ChangeStateAilive(userId);   
+        networkSessionManager.ChangeStateAilive(userId, isDie);   
     }
     //IN(About DATA) ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     // 직업 선택 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -44,8 +45,11 @@ public class NetworkSessionManager : NetworkBehaviour
         return isPlayerAlive[userId];
     }
 
-    public void ChangeStateAilive(int userId)
+    public void ChangeStateAilive(int userId, bool isDie)
     {
-        isPlayerAlive[userId] = !isPlayerAlive[userId];
+        if(isDie)
+            isPlayerAlive[userId] = false;
+        else
+            isPlayerAlive[userId] = true;
     }
 }

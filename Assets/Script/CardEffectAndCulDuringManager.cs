@@ -265,7 +265,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                 takenDamages[^1].takenDamage += totalDamage;    
 
             if(userTotalStates[targetUserID].currentHp <= 0 && sessionManager.GivePlayerAliveBool(targetUserID))
-                player.RequsetDieSignal(targetUserID);
+                player.RequsetDieSignal(targetUserID, true);
         }
         
     }
