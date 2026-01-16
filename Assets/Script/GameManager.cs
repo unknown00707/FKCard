@@ -125,6 +125,18 @@ public class GameManager : NetworkBehaviour
 
         networkSessionManager.ChangeStateAilive(userId, isDie);   
     }
+    public void RequsetMakeInsteadPlayer(int who, int whom, float howMuch)
+    {
+        if(!IsServer) return;
+
+        networkSessionManager.ChangeStateInsteadPlayer(who, whom, howMuch);
+    }
+    public void RequsetNormalizationInsteadPlayer(int who)
+    {
+        if(!IsServer) return;
+
+        networkSessionManager.NormalizationInsteadPlayer(who);
+    }
     //IN(About DATA) ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     // 직업 선택 
     public void InDicUserJobValue(ulong index, JobManager.Jobs job)

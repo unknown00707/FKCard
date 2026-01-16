@@ -148,9 +148,10 @@ public class PlayerJobSkill : NetworkBehaviour
             // --- 힐러 ---
             { (JobManager.Jobs.healer, 0), new HealerCard0Effect() },
             { (JobManager.Jobs.healer, 1), new HealerCard1Effect() },
-            // 2번, 5번은 미구현 상태라 제외
+            { (JobManager.Jobs.healer, 2), new HealerCard2Effect() },
             { (JobManager.Jobs.healer, 3), new HealerCard3Effect() },
             { (JobManager.Jobs.healer, 4), new HealerCard4Effect() },
+            { (JobManager.Jobs.healer, 5), new HealerCard5Effect() },
             { (JobManager.Jobs.healer, 6), new HealerCard6Effect() },
             { (JobManager.Jobs.healer, 7), new HealerCard7Effect() },
         };
@@ -334,9 +335,13 @@ public class PlayerJobSkill : NetworkBehaviour
         }
     }
     // 아군 살리기
-    public void ReviveTeamMember(ulong userId)
+    public void ReviveTeamMember(int userId)
     {
         player.RequsetDieSignal(userId , false);
+    }
+    public void MakeSubstitute(int targetUserID, float howMuch)
+    {
+        player.RequsetMakeInsteadPlayer(targetUserID, howMuch);
     }
     // 💡 핵심 변경: 복잡한 switch-case가 사라지고 단 3줄로 끝남!
     public void TriggerSkillFromChoosEnemyOrTeam()
@@ -357,7 +362,7 @@ public class PlayerJobSkill : NetworkBehaviour
         // 직업 카드 스킬 저장 후 카드 발동 준비 됨
         player.ReciveSignCardEffectReady(false);
     }
-    void SkillBasicSet(Jobs jobType, int index ,bool isToPlayer, bool isMe)
+    void SkillBasicSet(JobManager.Jobs jobType, int index ,bool isToPlayer, bool isMe)
     {
         job = jobType;
         cardIndex = index;
@@ -455,7 +460,7 @@ public class PlayerJobSkill : NetworkBehaviour
             case 2:
                 job = JobManager.Jobs.healer;
                 cardIndex = 2;
-                chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId);
+                chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId, true);
                 break;
             case 3:
                 SkillBasicSet(JobManager.Jobs.healer, 3, true, true);
@@ -466,7 +471,7 @@ public class PlayerJobSkill : NetworkBehaviour
             case 5:
                 job = JobManager.Jobs.healer;
                 cardIndex = 5;
-                chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId);
+                chooseEnemyOrTeam.CertainSetOn((int)OwnerClientId, false);
                 break;
             case 6:
                 SkillBasicSet(JobManager.Jobs.healer, 6, true, true);

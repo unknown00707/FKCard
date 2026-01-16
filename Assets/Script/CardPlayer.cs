@@ -194,4 +194,31 @@ public class CardPlayer : NetworkBehaviour
         if(GameManager.Instance != null)
             GameManager.Instance.RequsetDieSingal(userId, isDie);
     }
+
+    // Make Instead Player
+    public void RequsetMakeInsteadPlayer(int targetUserID, float howMuch)
+    {
+        if(!IsOwner) return;
+
+        RequsetMakeInsteadPlayerServerRpc(targetUserID, howMuch);
+    }
+
+    [ServerRpc]
+    private void RequsetMakeInsteadPlayerServerRpc(int targetUserID, float howMuch)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.RequsetMakeInsteadPlayer((int)OwnerClientId, targetUserID, howMuch);
+    }
+    public void RequestNormalizationInsteadPlayer(int who)
+    {
+        if(!IsOwner) return;
+
+        RequestNormalizationInsteadPlayerServerRpc(who);
+    }
+    [ServerRpc]
+    private void RequestNormalizationInsteadPlayerServerRpc(int who)
+    {
+        if(GameManager.Instance != null)
+            GameManager.Instance.RequsetNormalizationInsteadPlayer(who);
+    }
 }

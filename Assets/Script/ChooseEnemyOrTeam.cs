@@ -87,39 +87,21 @@ public class ChooseEnemyOrTeam : MonoBehaviour
         }
     }
 
-    public void CertainSetOn(int selfID)
+    public void CertainSetOn(int selfID, bool isAlive)
     {
         chooseObj.SetActive(true);
         isForPlayer = true;
-        bool isThereDie = false;
 
-        foreach(bool isAlive in sessionManager.isPlayerAlive)
-        {
-            if(!isAlive)
-            {
-                isThereAlive = true;
-                break;
-            }
-        }
 
-        if(!isThereAlive)
+        print("죽어있는 유저가 존재합니다!");
+        for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
-            print("죽어있는 유저가 없습니다!");
-            EndOfSelect((int)NetworkManager.Singleton.LocalClientId);
-            return;
-        }
-        else
-        {
-            print("죽어있는 유저가 존재합니다!");
-            for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
+            if(sessionManager.isPlayerAlive[i] == isAlive && i != selfID)
             {
-                if(!sessionManager.isPlayerAlive[i] && i != selfID)
-                {
-                    Image icon = seletedBTN[i].image;
-                    string iconString = GameManager.Instance.playerJobs[i].ToString();
-                    jobManager.ChangeImgToIcon(icon, iconString);
-                    seletedBTN[i].gameObject.SetActive(true);        
-                }
+                Image icon = seletedBTN[i].image;
+                string iconString = GameManager.Instance.playerJobs[i].ToString();
+                jobManager.ChangeImgToIcon(icon, iconString);
+                seletedBTN[i].gameObject.SetActive(true);        
             }
         }
         

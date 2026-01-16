@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Unity.Netcode;
 using Unity.Services.Lobbies.Models;
@@ -238,7 +239,6 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         int targetUserID = (int)givenDamge.targetMonsterID;
         float totalDamage = givenDamge.hitHpDamage + givenDamge.hitDGDamage;
         
-        
         List<TakenDamage> takenDamages  = FindTakenDamgeListByFilter(userTakenDamageGroups, targetUserID, realTurn);
         TakenDamage taken = new()
         {
@@ -249,7 +249,7 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
 
         for(int i = 0; i < givenDamge.numberOfHits; i++)
         {
-            if(!sessionManager.GivePlayerAliveBool(targetUserID))
+            if (!sessionManager.GivePlayerAliveBool(targetUserID))
             {
                 int anotherTargetID = targetUserID;
                 while(anotherTargetID == targetUserID)
@@ -258,16 +258,33 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
                 }
                 targetUserID = anotherTargetID;
             }
-            userTotalStates[targetUserID].currentHp -= totalDamage * userTotalStates[targetUserID].damageMultiplier;
-            if(takenDamages.Count == 0)
-                takenDamages.Add(taken);
-            else
-                takenDamages[^1].takenDamage += totalDamage;    
 
-            if(userTotalStates[targetUserID].currentHp <= 0 && sessionManager.GivePlayerAliveBool(targetUserID))
-                player.RequsetDieSignal(targetUserID, true);
+            if(sessionManager.insteadPlayer[targetUserID] != targetUserID)
+            {
+                int insteadId = sessionManager.insteadPlayer[targetUserID];
+                List<TakenDamage> insteadTakenDamages  = FindTakenDamgeListByFilter(userTakenDamageGroups, insteadId, realTurn);
+                TakenDamage insteadTakenData = taken;
+                insteadTakenData.id = insteadId;
+                insteadTakenData.takenDamage = totalDamage * sessionManager.insteadPlayerMagnification[targetUserID];
+                ByIdAddTakenData(insteadTakenDamages, insteadTakenData, totalDamage * sessionManager.insteadPlayerMagnification[targetUserID], insteadId);
+            }
+            else
+                ByIdAddTakenData(takenDamages, taken, totalDamage,targetUserID);
         }
-        
+    }
+
+    void ByIdAddTakenData(List<TakenDamage> takenList, TakenDamage takenData, float totalDamage, int index)
+    {
+        userTotalStates[index].currentHp -= totalDamage * userTotalStates[index].damageMultiplier;
+        if(takenList.Count == 0)
+        {
+            takenList.Add(takenData);
+        }
+        else
+            takenList[^1].takenDamage += totalDamage;   
+
+        if(userTotalStates[index].currentHp <= 0 && sessionManager.GivePlayerAliveBool(index))
+            player.RequsetDieSignal(index, true); 
     }
 
     public List<TakenDamage> FindTakenDamgeListByFilter(List<TakenDamage> orignList, int id, int turn)

@@ -17,6 +17,14 @@ public class HealerCard1Effect : ICardEffect
         }
     }
 }
+public class HealerCard2Effect : ICardEffect
+{
+    public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
+    {
+        skillManager.MakeSubstitute((int)skillManager.toUserID, 0.75f);
+    }
+}
+
 public class HealerCard3Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
@@ -41,7 +49,7 @@ public class HealerCard5Effect : ICardEffect
 {
     public void ApplyEffect(PlayerJobSkill skillManager, int currentTurn)
     {
-        skillManager.ReviveTeamMember(skillManager.toUserID);
+        skillManager.ReviveTeamMember((int)skillManager.toUserID);
     }
 }
 public class HealerCard6Effect : ICardEffect
