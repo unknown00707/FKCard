@@ -9,7 +9,7 @@ public class NetworkSessionManager : NetworkBehaviour
     public NetworkList<float> insteadPlayerMagnification = new();
     private readonly int INSTEAD_PLAYER_MANIFICATION_VALUE = 1;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public void Init()
+    public override void OnNetworkSpawn()
     {
         playerTotalNum.Value = NetworkManager.Singleton.ConnectedClientsList.Count;
         isPlayerAlive = new NetworkList<bool>(
@@ -31,12 +31,12 @@ public class NetworkSessionManager : NetworkBehaviour
     }
 
     // Update is called once per frame
-    public void DisInit()
+    public override void OnNetworkDespawn()
     {
         playerTotalNum.OnValueChanged -= OnPlayerTotalNumChanged;
         
     }
-    public void DisposeFounction()
+    public override void OnDestroy()
     {
         playerTotalNum?.Dispose();
     }

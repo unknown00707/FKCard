@@ -64,13 +64,6 @@ public class GameManager : NetworkBehaviour
     // Start 대신 OnNetworkSpawn을 쓰는 게 네트워크 스크립트의 국룰이야!
     public override void OnNetworkSpawn()
     {
-        if(IsServer)
-        {
-            networkSessionManager.Init();
-            turnManager.Init();
-            stageManager.Init();
-        }
-
         // 리스너 등록
         playerJobs.OnListChanged += OnPlayerJobsChanged;
         playerReady.OnListChanged += OnPlayerReadyChanged;
@@ -84,9 +77,6 @@ public class GameManager : NetworkBehaviour
         playerJobs.OnListChanged -= OnPlayerJobsChanged;
         playerReady.OnListChanged -= OnPlayerReadyChanged;
         playerCardSetReady.OnListChanged -= OnPlayerSetCardChanged;
-        stageManager.DisInit();
-        turnManager.DisInit();
-        networkSessionManager.DisInit();
     }
 
     
@@ -286,8 +276,5 @@ public class GameManager : NetworkBehaviour
         playerJobs?.Dispose();
         playerReady?.Dispose();
         playerCardSetReady?.Dispose();
-        networkSessionManager.DisposeFounction();
-        turnManager.DisposeFounction();
-        stageManager.DisposeFounction();
     }
 }

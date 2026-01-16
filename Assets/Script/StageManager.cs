@@ -14,7 +14,7 @@ public class StageManager : NetworkBehaviour
     public TextMeshProUGUI stageTxt;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public void Init()
+    public override void OnNetworkSpawn()
     {
         stageNum.Value = 0;
         sideStageNum.Value = 0;
@@ -24,12 +24,12 @@ public class StageManager : NetworkBehaviour
     }
 
     // Update is called once per frame
-    public void DisInit()
+    public override void OnNetworkDespawn()
     {
         stageNum.OnValueChanged -= OnStageNumChanged;
         sideStageNum.OnValueChanged -= OnSideStageNumChanged;
     }
-    public void DisposeFounction()
+    public override void OnDestroy()
     {
         stageNum?.Dispose();
         sideStageNum?.Dispose();

@@ -6107,7 +6107,7 @@ MonoBehaviour:
   - monsters: []
   - monsters: []
   monsterAboutDamages: []
-  monsterTakenDamages: []
+  enemyTakenDamages: []
   stageBoss: []
 --- !u!1 &1150050378
 GameObject:
@@ -10112,6 +10112,7 @@ MonoBehaviour:
   enemyCulGroup: {fileID: 1148699780}
   playerJobSkill: {fileID: 361320983}
   turnManager: {fileID: 1421212752}
+  sessionManager: {fileID: 1417306287}
   chooseObj: {fileID: 994115225}
   seletedBTN:
   - {fileID: 479828325}

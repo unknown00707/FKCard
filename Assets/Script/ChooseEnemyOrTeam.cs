@@ -91,9 +91,7 @@ public class ChooseEnemyOrTeam : MonoBehaviour
     {
         chooseObj.SetActive(true);
         isForPlayer = true;
-
-
-        print("죽어있는 유저가 존재합니다!");
+        int index = 0;
         for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
         {
             if(sessionManager.isPlayerAlive[i] == isAlive && i != selfID)
@@ -102,8 +100,12 @@ public class ChooseEnemyOrTeam : MonoBehaviour
                 string iconString = GameManager.Instance.playerJobs[i].ToString();
                 jobManager.ChangeImgToIcon(icon, iconString);
                 seletedBTN[i].gameObject.SetActive(true);        
+                index++;
             }
         }
+
+        if(index == 0)
+            EndOfSelect(selfID);
         
     }
 

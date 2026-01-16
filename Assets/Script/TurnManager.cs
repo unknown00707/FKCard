@@ -11,7 +11,7 @@ public class TurnManager : NetworkBehaviour
     public NetworkList<int> canActivePlayerTurnNum = new();
     CardPlayer player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public void Init()
+    public override void OnNetworkSpawn()
     {
         isPlayerTrun.Value = true;
         totalTrunNum.Value = 0;
@@ -36,12 +36,12 @@ public class TurnManager : NetworkBehaviour
         }
     }
     // Update is called once per frame
-    public void DisInit()
+    public override void OnNetworkDespawn()
     {
         totalTrunNum.OnValueChanged -= OnTotalTurnNumChanged;
         isPlayerTrun.OnValueChanged -= OnPlayerTrunIsOn;
     }
-    public void DisposeFounction()
+    public override void OnDestroy()
     {
         isPlayerTrun?.Dispose();
     }
