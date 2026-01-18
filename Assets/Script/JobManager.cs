@@ -338,6 +338,5 @@ public class JobManager : MonoBehaviour
         GoToReadyRoom(false);
         seletedObj.SetActive(false);
         stateCulManager.InitCardPlayer();
-        cardSpaceCheck.StartACoroutine();
     }
 }

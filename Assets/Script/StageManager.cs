@@ -6,8 +6,8 @@ using UnityEngine;
 public class StageManager : NetworkBehaviour
 {
     public TurnManager turnManager;
-    public NetworkVariable<int> stageNum = new(); // 스테이지 큰 수
-    public NetworkVariable<int> sideStageNum = new(); // 스테이지 작은 수
+    public NetworkVariable<int> stageNum = new(0); // 스테이지 큰 수
+    public NetworkVariable<int> sideStageNum = new(0); // 스테이지 작은 수
     public EnemyCulGroup enemyCulGroup;
     public CardSpaceCheck cardSpaceCheck;
 
@@ -16,9 +16,6 @@ public class StageManager : NetworkBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()
     {
-        stageNum.Value = 0;
-        sideStageNum.Value = 0;
-
         stageNum.OnValueChanged += OnStageNumChanged;
         sideStageNum.OnValueChanged += OnSideStageNumChanged;
     }

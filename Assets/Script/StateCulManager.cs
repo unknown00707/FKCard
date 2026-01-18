@@ -384,7 +384,6 @@ public class StateCulManager : MonoBehaviour
                             tr.SetParent(userT);
 
                             tr.SetSiblingIndex(i);
-                            print("카드 패로 돌아가기!");
                         }
                     }
                 }

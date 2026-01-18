@@ -420,10 +420,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCardData
   stateCulManager: {fileID: 0}
+  enemyCardDatasByTrun: []
   enemyName: "\uC9C0\uC131\uC9C0\uC131"
   enemyHP: 60
-  enemyDamage: 20
+  enemyDamage: 900
   isBoss: 0
   enemyID: 1
+  useSkillNums: 00000000
   img: {fileID: 5963204450062412982, guid: ab7e4cacbbd508542961d03c0f830db4, type: 3}
   ep: "\uC911\uAC04\uBCF4\uC2A4"

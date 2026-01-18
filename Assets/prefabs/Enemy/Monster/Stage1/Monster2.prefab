@@ -423,8 +423,9 @@ MonoBehaviour:
   enemyCardDatasByTrun: []
   enemyName: "\uBC30\uCE58\uAE30"
   enemyHP: 155
-  enemyDamage: 30
+  enemyDamage: 5000
   isBoss: 0
   enemyID: 2
+  useSkillNums: 00000000
   img: {fileID: 5963204450062412982, guid: ab7e4cacbbd508542961d03c0f830db4, type: 3}
   ep: "\uC900\uBCF4\uC2A4\uAE09"

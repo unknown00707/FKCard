@@ -54,11 +54,11 @@ public class CardSpaceCheck : MonoBehaviour
 
             player.RequsetUseCardSignal();
             // 카드 효과 저장 함수 발동
-            print("카드 발동!");
-            stateCulManager.CardSearchMatch();
-            
             print("턴 넘길 준비!");
             StopACoroutine();
+            
+            print("카드 발동!");
+            stateCulManager.CardSearchMatch();
         }
     }
     public void StartACoroutine()

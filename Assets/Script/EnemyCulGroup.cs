@@ -72,8 +72,7 @@ public class EnemyCulGroup : MonoBehaviour
         {
             monsterAboutDamages.Add(new DamageGroup());
         }
-        MakeSameInit(0,2);
-        MakeSameTotalState();
+        InitializeCardEffects();
     }
 
     // Update is called once per frame
@@ -104,7 +103,7 @@ public class EnemyCulGroup : MonoBehaviour
         return Random.Range(0, stageMonsters[stageNum].monsters.Count());
     }
 
-    void MakeSameInit(int stageNum, int howMuch)
+    public void MakeSameInit(int stageNum, int howMuch)
     {
         foreach(Button btn in enemyPrefabs)
         {
@@ -259,6 +258,7 @@ public class EnemyCulGroup : MonoBehaviour
         int currentTurn = turnManager.GiveTurnValue();
         for(int i = 0; i < activeMonsterDic.Count; i++)
         {
+            print("AciveMonsterDic : " + i);
             // Dictionary에서 해당 직업/카드의 효과를 찾아서 실행
             if (monsterCardEffects.TryGetValue(RandomSkillVAlue(i), out IMonasterEffect effect))
             {
@@ -276,6 +276,7 @@ public class EnemyCulGroup : MonoBehaviour
 
     int RandomSkillVAlue(int targetID)
     {
+        print(targetID +"/"+activeMonsterDic.Count);
         int enemyCardIndex = activeMonsterDic[targetID].enemyID;
         int ranValue = Random.Range(0, activeMonsterDic[targetID].useSkillNums.Count());
         int useSkillNum = activeMonsterDic[targetID].useSkillNums[ranValue];
@@ -298,6 +299,7 @@ public class EnemyCulGroup : MonoBehaviour
         {
             mostserCheckUseSpecailSkill.Add((enemyCardIndex, useSkillNum), true); // 스킬 사용했다는 걸 표시
         }
+        print("사용할 카드의 인덱스 : " +useSkillNum);
         return  useSkillNum;
     }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -13,7 +14,7 @@ public class GameManager : NetworkBehaviour
     // 기본적으로 NetworkVariable은 서버만 쓸 수 있고(Write), 모두가 읽을 수 있어(Read).
     public NetworkList<FixedString64Bytes> playerJobs;
     public NetworkList<bool> playerReady = new(); // 직업 선택 준비
-    public NetworkList<bool> playerCardSetReady = new(); // 턴 넘길 준비
+
     JobManager jobManager;
     CardSpaceCheck cardSpaceCheck;
     CardEffectAndCulDuringManager durManager;
@@ -53,12 +54,6 @@ public class GameManager : NetworkBehaviour
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
-
-        playerCardSetReady = new NetworkList<bool>(
-            new List<bool>{true, true, true},
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
     }
 
     // Start 대신 OnNetworkSpawn을 쓰는 게 네트워크 스크립트의 국룰이야!
@@ -67,7 +62,6 @@ public class GameManager : NetworkBehaviour
         // 리스너 등록
         playerJobs.OnListChanged += OnPlayerJobsChanged;
         playerReady.OnListChanged += OnPlayerReadyChanged;
-        playerCardSetReady.OnListChanged += OnPlayerSetCardChanged;
     }
 
 
@@ -76,7 +70,6 @@ public class GameManager : NetworkBehaviour
         // 리스너 해제
         playerJobs.OnListChanged -= OnPlayerJobsChanged;
         playerReady.OnListChanged -= OnPlayerReadyChanged;
-        playerCardSetReady.OnListChanged -= OnPlayerSetCardChanged;
     }
 
     
@@ -89,10 +82,6 @@ public class GameManager : NetworkBehaviour
     void OnPlayerReadyChanged(NetworkListEvent<bool> changeEvent)
     {
         jobManager.ReciveReadySignPublic(playerReady);
-    }
-    void OnPlayerSetCardChanged(NetworkListEvent<bool> changeEvent)
-    {
-        // 턴 넘김 효과 . . .
     }
     // REQUSET ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     // 카드 배치 신호 받기 및 카드 생성 함수 호출
@@ -159,8 +148,13 @@ public class GameManager : NetworkBehaviour
     private void InGameStartSignClientRpc()
     {
         print("ClineRpc: 모든 클라이언트 게임 시작!");
+        // 플레이어 초기 설정
         GameSetUIManager.instance.CloseSettingsPanel();
         jobManager.RequestGameStartSign();
+        cardSpaceCheck.StartACoroutine(); // 강제 카드 내기 위한 코루틴 실행
+        // 일반 몬스터 생성
+        enemyCulGroup.MakeSameInit(stageManager.GiveStageNum(), UnityEngine.Random.Range(0,enemyCulGroup.stageMonsters[stageManager.GiveStageNum()].monsters.Count()));
+        enemyCulGroup.MakeSameTotalState();
     }
 
     
@@ -177,14 +171,14 @@ public class GameManager : NetworkBehaviour
     {
         if(!IsServer) return;
 
-        playerCardSetReady[(int)id] = isReady;
+        turnManager.canActivePlayer[(int)id] = isReady;
         CheckCardEffectReady();
     }
     private void CheckCardEffectReady()
     {
         for(int i = 0; i < networkSessionManager.GivePlayerTotalNum(); i ++)
         {
-            if(playerCardSetReady[i])
+            if(turnManager.GiveAblePlayerBoolValue(i))
                 return;
         }
 
@@ -275,6 +269,5 @@ public class GameManager : NetworkBehaviour
         // NetworkVariable도 Dispose가 필요합니다.
         playerJobs?.Dispose();
         playerReady?.Dispose();
-        playerCardSetReady?.Dispose();
     }
 }

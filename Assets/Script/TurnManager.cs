@@ -5,35 +5,31 @@ using UnityEngine;
 public class TurnManager : NetworkBehaviour
 {
     public EnemyCulGroup enemyCulGroup;
-    public NetworkVariable<int> totalTrunNum = new();
-    public NetworkVariable<bool> isPlayerTrun = new();
-    public NetworkList<bool> canActivePlayer = new();
-    public NetworkList<int> canActivePlayerTurnNum = new();
-    CardPlayer player;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public override void OnNetworkSpawn()
-    {
-        isPlayerTrun.Value = true;
-        totalTrunNum.Value = 0;
-        canActivePlayer = new NetworkList<bool>(
+    public NetworkVariable<int> totalTrunNum = new(0);
+    public NetworkVariable<bool> isPlayerTrun = new(true);
+    public NetworkList<bool> canActivePlayer = new(
             new List<bool>{true, true, true},
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
-        canActivePlayerTurnNum = new NetworkList<int>(
+    public NetworkList<int> canActivePlayerTurnNum = new(
             new List<int>{0, 0, 0},
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
-        totalTrunNum.OnValueChanged += OnTotalTurnNumChanged;
-        isPlayerTrun.OnValueChanged += OnPlayerTrunIsOn;
-    }
+    CardPlayer player;
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Update()
     {
         if (player == null && NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
         {
             player = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<CardPlayer>();
         }
+    }
+    public override void OnNetworkSpawn()
+    {
+        totalTrunNum.OnValueChanged += OnTotalTurnNumChanged;
+        isPlayerTrun.OnValueChanged += OnPlayerTrunIsOn;
     }
     // Update is called once per frame
     public override void OnNetworkDespawn()
@@ -73,7 +69,10 @@ public class TurnManager : NetworkBehaviour
     }
     public void SetAblePlayerBoolValue(int userId)
     {
-        canActivePlayer[userId] = !canActivePlayer[userId];
+        if(canActivePlayer[userId])
+            canActivePlayer[userId] = false;
+        else
+            canActivePlayer[userId] = true;
     }
     public void RequsetDelayAblePlayerTurnNum(int delayTime, int userId)
     {
