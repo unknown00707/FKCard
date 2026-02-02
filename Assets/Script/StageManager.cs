@@ -46,24 +46,18 @@ public class StageManager : NetworkBehaviour
     }
     public void ReciveSignToChangeTrun()
     {
-        StartCoroutine(WaitForDamageAndEffect(turnManager.isPlayerTrun.Value));
+        StartCoroutine(WaitForDamageAndEffect());
     }
-    IEnumerator WaitForDamageAndEffect(bool isPlayerTrun)
+    IEnumerator WaitForDamageAndEffect()
     {
-        if(!isPlayerTrun)
-        {
-            print("몬스터의 턴!");
-            
-            enemyCulGroup.RequsetTheDamageToMonster();
-            // 턴에 해당하는 보스에게 데미지 주는 코드 . . .
-        }
-        else
-            print("플레이어 턴!");
+        
         yield return new WaitForSecondsRealtime(5f);
 
-        cardSpaceCheck.CardSpacePrefabsInit(isPlayerTrun); // 카드 초기 상태로 변경
+        cardSpaceCheck.CardSpacePrefabsInit(false); // 카드 초기 상태로 변경
 
         print("턴 효과 적용 완료!");
+
+
     }
     public int GiveStageNum()
     {

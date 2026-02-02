@@ -157,6 +157,21 @@ public class GameManager : NetworkBehaviour
         enemyCulGroup.MakeSameTotalState();
     }
 
+    public void RequsetNextStage()
+    {
+        if(!IsServer) return;
+
+        turnManager.ComparisonAblePlayer();
+        cardSpaceCheck.StartACoroutine();
+        if(enemyCulGroup.CheckEnemyAliveAllByBoolValue())
+        {
+            stageManager.sideStageNum.Value++;
+            //몬스터 생성
+            enemyCulGroup.MakeSameInit(stageManager.GiveStageNum(), UnityEngine.Random.Range(0,enemyCulGroup.stageMonsters[stageManager.GiveStageNum()].monsters.Count()));
+            enemyCulGroup.MakeSameTotalState();
+        }
+    }
+
     
     // 유저의 직업 스텟 정보 동기화용 함수
     public void InGameUserJobStatSame(float hp, float dg, float crip, float damageFromTakenDg, float beneficialEffectMultiplier , ulong userId)
@@ -187,10 +202,9 @@ public class GameManager : NetworkBehaviour
         playerJobSkill.ReciveUpUserDamage();
         playerJobSkill.RequsetHealDataSend();
         print("턴의 변화 확인!");
-        turnManager.ChangeTurnBoolValue(); // 턴 넘어갈 타이밍 , 보스/몬스터 턴
-        stageManager.ReciveSignToChangeTrun();
-        turnManager.ChangeTurnNumValue();
+        stageManager.ReciveSignToChangeTrun(); // UI 효과
         turnManager.CheckTurnNumForWhoseTurn();
+        turnManager.ChangeTurnNumValue(); // 턴 증가
     }
 
     // 유저의 버프 스텟을 임시 저장

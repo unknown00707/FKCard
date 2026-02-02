@@ -149,6 +149,14 @@ public class EnemyCulGroup : MonoBehaviour
         totalDG.text = dg.ToString();
     }
 
+    public bool CheckEnemyAliveAllByBoolValue()
+    {
+        if(activeMonsterDic.Count <= 0)
+            return true;
+        else
+            return false;
+    }
+
     public void RequsetTheDamageToMonster()
     {
         foreach(UserDamgeGroup userDamgeGroup in cEACDManager.userAboutDamages)

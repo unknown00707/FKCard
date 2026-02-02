@@ -6,7 +6,6 @@ public class TurnManager : NetworkBehaviour
 {
     public EnemyCulGroup enemyCulGroup;
     public NetworkVariable<int> totalTrunNum = new(0);
-    public NetworkVariable<bool> isPlayerTrun = new(true);
     public NetworkList<bool> canActivePlayer = new(
             new List<bool>{true, true, true},
             NetworkVariableReadPermission.Everyone,
@@ -29,31 +28,25 @@ public class TurnManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         totalTrunNum.OnValueChanged += OnTotalTurnNumChanged;
-        isPlayerTrun.OnValueChanged += OnPlayerTrunIsOn;
     }
     // Update is called once per frame
     public override void OnNetworkDespawn()
     {
         totalTrunNum.OnValueChanged -= OnTotalTurnNumChanged;
-        isPlayerTrun.OnValueChanged -= OnPlayerTrunIsOn;
     }
     public override void OnDestroy()
     {
-        isPlayerTrun?.Dispose();
+        totalTrunNum?.Dispose();
+        canActivePlayer?.Dispose();
+        canActivePlayerTurnNum?.Dispose();
     }
     void OnTotalTurnNumChanged(int oldValue, int newValue)
     {
-        // 턴 변화시 UI 효과
+        // UI 이펙트
+
+        GameManager.Instance.RequsetNextStage();
     }   
-    void OnPlayerTrunIsOn(bool oldValue, bool newValue)
-    {
-        // 턴 변화시 UI 효과
-    }
     
-    public void ChangeTurnBoolValue()
-    {
-        isPlayerTrun.Value = !isPlayerTrun.Value;
-    }
     public void ChangeTurnNumValue()
     {
         totalTrunNum.Value++;
@@ -93,16 +86,19 @@ public class TurnManager : NetworkBehaviour
             }
         }
     }
-    public void CheckTurnNumForWhoseTurn()
+    public bool CheckTurnNumForWhoseTurn()
     {
         if(totalTrunNum.Value % 2 == 0)
         {
             print("플레이어 턴입니다.");
+            enemyCulGroup.RequsetTheDamageToMonster(); // 몬스터가 피해를 받음
+            return true;
         }
         else
         {
             print("몬스터 턴입니다.");
-            enemyCulGroup.AttackAllEnemyCulOnStage();
+            enemyCulGroup.AttackAllEnemyCulOnStage(); // 몬스터가 데미지를 줌
+            return false;
         }
     }
     public void RequsetDelayTurn(int delayTime)
