@@ -307,7 +307,7 @@ public class EnemyCulGroup : MonoBehaviour
         {
             mostserCheckUseSpecailSkill.Add((enemyCardIndex, useSkillNum), true); // 스킬 사용했다는 걸 표시
         }
-        print("사용할 카드의 인덱스 : " +useSkillNum);
+        print("사용할 카드의 인덱스 : " + useSkillNum);
         return  useSkillNum;
     }
 

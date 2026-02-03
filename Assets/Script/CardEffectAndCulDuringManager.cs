@@ -97,15 +97,26 @@ public class CardEffectAndCulDuringManager : MonoBehaviour
         userState[userID][3] = damageTakenMultiplier;
         userState[userID][4] = beneficialEffectMultiplier;
 
-        userTotalStates[(int)userID].maxHp = userState[userID][0];
-        userTotalStates[(int)userID].maxDG = userState[userID][1];
-        userTotalStates[(int)userID].maxCritical = userState[userID][2];
-        userTotalStates[(int)userID].damageMultiplier = userState[userID][3];
-        userTotalStates[(int)userID].beneficialEffectMultiplier = userState[userID][4];
+        UserInitByIndex((int)userID);
+    }
+    void UserInitByIndex(int index)
+    {
+        userTotalStates[index].maxHp = userState[userID][0];
+        userTotalStates[index].maxDG = userState[userID][1];
+        userTotalStates[index].maxCritical = userState[userID][2];
+        userTotalStates[index].damageMultiplier = userState[userID][3];
+        userTotalStates[index].beneficialEffectMultiplier = userState[userID][4];
 
-        userTotalStates[(int)userID].currentHp = userTotalStates[(int)userID].maxHp;
-        userTotalStates[(int)userID].currentDG = userTotalStates[(int)userID].maxDG;
-        userTotalStates[(int)userID].currentCritical = userTotalStates[(int)userID].maxCritical;
+        userTotalStates[index].currentHp = userTotalStates[index].maxHp;
+        userTotalStates[index].currentDG = userTotalStates[index].maxDG;
+        userTotalStates[index].currentCritical = userTotalStates[index].maxCritical;
+    }
+    public void UserStatInit()
+    {
+        for(int i = 0; i < sessionManager.playerTotalNum.Value; i ++)
+        {
+            UserInitByIndex(i);
+        }
     }
 
     public void ReciveUpStatUserByBuffer(UpStateData upStateData) // 증가되는 유저 스텟 저장

@@ -116,6 +116,28 @@ public class GameManager : NetworkBehaviour
 
         networkSessionManager.NormalizationInsteadPlayer(who);
     }
+    public void RequsetNextStage()
+    {
+        if(!IsServer) return;
+
+        turnManager.TurnManagerInit();
+        stageManager.RequsetUpStageNum();
+        NextStageForClientRpc();
+    }
+    [ClientRpc]
+    private void NextStageForClientRpc()
+    {
+        print("ClineRpc: 모든 클라이언트 다음 스테이지 이동!");
+        //몬스터 생성
+        enemyCulGroup.MakeSameInit(stageManager.GiveStageNum(), UnityEngine.Random.Range(0,enemyCulGroup.stageMonsters[stageManager.GiveStageNum()].monsters.Count()));
+        enemyCulGroup.MakeSameTotalState();
+    
+        // 선택에 따른 기초 영구 능력치 증가 및 적용
+        durManager.UserStatInit(); // 능력치 초기화
+        // 카드 초기화
+
+        cardSpaceCheck.StartACoroutine(); // 강제 카드 내기 위한 코루틴 실행
+    }
     //IN(About DATA) ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
     // 직업 선택 
     public void InDicUserJobValue(ulong index, JobManager.Jobs job)
@@ -157,21 +179,6 @@ public class GameManager : NetworkBehaviour
         enemyCulGroup.MakeSameTotalState();
     }
 
-    public void RequsetNextStage()
-    {
-        if(!IsServer) return;
-
-        turnManager.ComparisonAblePlayer();
-        cardSpaceCheck.StartACoroutine();
-        if(enemyCulGroup.CheckEnemyAliveAllByBoolValue())
-        {
-            stageManager.sideStageNum.Value++;
-            //몬스터 생성
-            enemyCulGroup.MakeSameInit(stageManager.GiveStageNum(), UnityEngine.Random.Range(0,enemyCulGroup.stageMonsters[stageManager.GiveStageNum()].monsters.Count()));
-            enemyCulGroup.MakeSameTotalState();
-        }
-    }
-
     
     // 유저의 직업 스텟 정보 동기화용 함수
     public void InGameUserJobStatSame(float hp, float dg, float crip, float damageFromTakenDg, float beneficialEffectMultiplier , ulong userId)
@@ -204,7 +211,13 @@ public class GameManager : NetworkBehaviour
         print("턴의 변화 확인!");
         stageManager.ReciveSignToChangeTrun(); // UI 효과
         turnManager.CheckTurnNumForWhoseTurn();
-        turnManager.ChangeTurnNumValue(); // 턴 증가
+        if(enemyCulGroup.CheckEnemyAliveAllByBoolValue())
+        {
+            print("모든 몬스터가 죽었습니다! 다음 스테이지로 이동합니다!");
+            RequsetNextStage();
+        }
+        else
+            turnManager.ChangeTurnNumValue(); // 턴 증가
     }
 
     // 유저의 버프 스텟을 임시 저장

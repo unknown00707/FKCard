@@ -56,11 +56,19 @@ public class StageManager : NetworkBehaviour
         cardSpaceCheck.CardSpacePrefabsInit(false); // 카드 초기 상태로 변경
 
         print("턴 효과 적용 완료!");
-
-
     }
     public int GiveStageNum()
     {
         return stageNum.Value;
+    }
+
+    public void RequsetUpStageNum()
+    {
+        sideStageNum.Value++;
+        if(sideStageNum.Value > enemyCulGroup.stageMonsters[stageNum.Value].monsters.Count())
+        {
+            sideStageNum.Value = 0;
+            stageNum.Value++;
+        }
     }
 }

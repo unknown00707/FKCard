@@ -18,6 +18,15 @@ public class TurnManager : NetworkBehaviour
         );
     CardPlayer player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public void TurnManagerInit()
+    {
+        totalTrunNum.Value = 0;
+        for(int i = 0; i < GameManager.Instance.SendPlayerTotalNum(); i++)
+        {
+            canActivePlayer[i] = true;
+            canActivePlayerTurnNum[i] = 0;
+        }
+    }
     void Update()
     {
         if (player == null && NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
